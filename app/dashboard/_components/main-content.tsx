@@ -1,37 +1,46 @@
-"use client"
+'use client'
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Upload, Mic } from 'lucide-react'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { VideoGenerationCard } from '@/dashboard/_components/video-generation-card'
+import { videoGenerationTypes } from '@/data/video-generation-types'
+import { Input } from '@/components/ui/input'
 
-export function MainContent() {
+export default function DashboardPage() {
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const filteredTypes = videoGenerationTypes.filter((type) =>
+    type.title.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   return (
-    <main className="flex-1 p-4 bg-gray-100">
-      <Card className="mb-4 overflow-hidden">
-        <CardContent className="p-0">
-          <div className="flex justify-center items-center h-64 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-2xl font-bold">
-            Video
-          </div>
-        </CardContent>
-      </Card>
-      <div className="flex justify-between items-center mb-4">
-        <Button className="bg-green-500 hover:bg-green-600 text-white">
-          <Upload className="w-4 h-4 mr-2" />
-          Upload a File
-        </Button>
-        <Button variant="outline" className="bg-white hover:bg-gray-100">
-          <Mic className="w-4 h-4 mr-2" />
-          Record
-        </Button>
-      </div>
-      <Card>
-        <CardContent className="p-2">
-          <div className="bg-gray-200 h-16 flex items-center justify-center rounded">
-            Timeline
-          </div>
-        </CardContent>
-      </Card>
-    </main>
+    <div className="container mx-auto py-8">
+      <h1 className="text-4xl font-bold mb-8">AI Video Generation Dashboard</h1>
+      <Input
+        type="search"
+        placeholder="Search video generation types..."
+        className="mb-6"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {filteredTypes.map((type, index) => (
+          <motion.div
+            key={type.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <VideoGenerationCard {...type} />
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
   )
 }
 

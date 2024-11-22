@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/dashboard/_components/theme-provider"
 import { LayoutContent } from "@/dashboard/_components/layout-content"
 import { useEffect, useState } from "react"
 import React from "react"
+import { AnimatePresence } from "framer-motion"
 
 export default function RootLayout({
   children,
@@ -26,7 +27,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LayoutContent>{children}</LayoutContent>
+          <AnimatePresence mode="wait">
+            <LayoutContent>{children}</LayoutContent>
+          </AnimatePresence>
         </ThemeProvider>
       ) : (
         children
