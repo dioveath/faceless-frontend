@@ -1,3 +1,4 @@
+import { useAvailableOptions } from '@/hooks/video/use-generate-video'
 import { useState } from 'react'
 
 export type VideoSettings = {
@@ -34,6 +35,9 @@ const initialSettings: VideoSettings = {
 
 export function useVideoSettings() {
   const [settings, setSettings] = useState<VideoSettings>(initialSettings)
+  const { data, isLoading, error } = useAvailableOptions()
+
+  console.log(data)
 
   const updateSettings = (key: keyof VideoSettings, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }))
