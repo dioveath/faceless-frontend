@@ -1,15 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CreditCard, LogOut, Settings, Sun, Globe } from 'lucide-react'
+import { CreditCard, LogOut, Settings, Sun, Globe, Trash2 } from 'lucide-react'
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-import { simulateApi } from "@/utils/api/simulate-api"
 import { cn } from "@/lib/utils"
 import { useUser } from "@/hooks/user/use-user"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { redirect } from "next/navigation"
 
 interface UserProfile {
   name: string
@@ -19,7 +20,7 @@ interface UserProfile {
 }
 
 export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
-  const { user, loading } = useUser()
+  const { user, loading, logout } = useUser()
 
   if (loading) {
     return (
@@ -40,14 +41,20 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
 
   const { avatar_url, full_name, email } = user?.user_metadata || {}
 
+  const handleLogout = async () => {
+    await logout()
+    // refresh the page to clear the cache
+    redirect("/login")
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className={cn(
-              "flex items-center text-foreground hover:bg-accent hover:text-accent-foreground",
+              "w-full flex flex-1 items-center py-6",
               isCollapsed ? "w-full p-0 justify-center" : "w-full justify-start"
             )}
           >
@@ -58,7 +65,7 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
             {!isCollapsed && (
               <div className="ml-3 text-left">
                 <div className="font-semibold">{full_name}</div>
-                <div className="text-sm text-muted-foreground">{`Pro`}</div>
+                <div className="text-sm">{`Pro`}</div>
               </div>
             )}
           </Button>
@@ -67,16 +74,13 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
       <DropdownMenuContent className="w-64 bg-popover text-popover-foreground">
         <div className="p-4">
           <div className="font-semibold">{email}</div>
-          <Button variant="outline" className="w-full mt-2 text-foreground border-border hover:bg-accent hover:text-accent-foreground">Switch Team</Button>
+          {/* <Button variant="outline" className="w-full mt-2 text-foreground border-border hover:bg-accent hover:text-accent-foreground">Switch Team</Button> */}
         </div>
         <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground">
           <CreditCard className="w-4 h-4 mr-2" />
           Billing
         </DropdownMenuItem>
-        <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground">
-          <LogOut className="w-4 h-4 mr-2" />
-          Sign Out
-        </DropdownMenuItem>
+        <DeleteAlertDialog handleLogout={logout} loading={loading} />
         <div className="p-4">
           <div className="text-sm text-muted-foreground mb-2">Preferences</div>
           <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground">
@@ -96,3 +100,32 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
   )
 }
 
+type LogoutAlertDialogProps = {
+  handleLogout: () => void
+  loading: boolean
+}
+
+const DeleteAlertDialog = ({ handleLogout, loading }: LogoutAlertDialogProps) => {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground" disabled={loading}>
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out
+        </DropdownMenuItem>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will log you out of your account.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleLogout}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}

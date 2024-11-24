@@ -36,9 +36,18 @@ export const useUser = () => {
         };
     }, []);
 
+    const logout = async () => {
+        try {
+            await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
+    };    
+
     return {
         user,
         loading,
         isAuthenticated: !!user,
+        logout
     };
 };

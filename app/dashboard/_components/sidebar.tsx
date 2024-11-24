@@ -12,42 +12,22 @@ import { ProfileDropdown } from "./profile-dropdown"
 import { ThemeToggle } from "./theme-toggle"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
-import { simulateApi } from "@/utils/api/simulate-api"
+import { useTaskForCurrentUser } from "@/hooks/task/use-task"
 
 interface SidebarProps {
   isMobileOpen: boolean
   onMobileClose: () => void
 }
 
-interface RecentChat {
-  id: number
-  title: string
-}
-
 export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
-  const [isLoadingRecentChats, setIsLoadingRecentChats] = useState(true)
-  const [recentChats, setRecentChats] = useState<RecentChat[]>([])
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed)
-
-  useEffect(() => {
-    const fetchRecentChats = async () => {
-      const data = await simulateApi<RecentChat[]>([
-        { id: 1, title: "Similar dashboard" },
-        { id: 2, title: "API integration" },
-        { id: 3, title: "User authentication" },
-      ])
-      setRecentChats(data)
-      setIsLoadingRecentChats(false)
-    }
-
-    fetchRecentChats()
-  }, [])
+  const { data, isLoading, error } = useTaskForCurrentUser()
 
   const SidebarContent = ({ isMobile = false }) => (
-    <motion.div 
+    <motion.div
       className="flex flex-col h-full"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -56,8 +36,8 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
       <div className="flex-1 overflow-hidden">
         <div className="p-4 flex items-center justify-between">
           {!isCollapsed && <div className="text-xl font-bold text-foreground">V0</div>}
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             className={cn("text-muted-foreground hover:text-accent", isCollapsed && "w-full")}
             onClick={isMobile ? onMobileClose : toggleSidebar}
@@ -72,16 +52,18 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
           </Button>
         </div>
         <div className="p-4">
-          <Button 
-            variant="ghost" 
-            className={cn(
-              "w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground",
-              (isCollapsed && !isMobile) && "px-0 justify-center"
-            )}
-          >
-            <Plus className="w-5 h-5" />
-            {(!isCollapsed || isMobile) && <span className="ml-2">New Chat</span>}
-          </Button>
+          <Link href="/dashboard/generate/reddit-stories" passHref>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground",
+                (isCollapsed && !isMobile) && "px-0 justify-center"
+              )}
+            >
+              <Plus className="w-5 h-5" />
+              {(!isCollapsed || isMobile) && <span className="ml-2">New Generation</span>}
+            </Button>
+          </Link>
         </div>
         <nav className="flex flex-col gap-2 px-2">
           <SidebarItemLink href="/dashboard/library" icon={Book} label="Library" isCollapsed={isCollapsed && !isMobile} isActive={pathname === "/dashboard/library"} />
@@ -90,8 +72,8 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
         </nav>
         {(!isCollapsed || isMobile) && (
           <ScrollArea className="flex-1 px-4 py-2">
-            <div className="text-sm text-muted-foreground mb-2">Recent Chats</div>
-            {isLoadingRecentChats ? (
+            <div className="text-sm text-muted-foreground mb-2">Recent Generations</div>
+            {isLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-8 w-full" />
@@ -99,22 +81,25 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
               </div>
             ) : (
               <div className="space-y-2">
-                {recentChats.map((chat) => (
-                  <Button
-                    key={chat.id}
-                    variant="ghost"
-                    className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {chat.title}
-                  </Button>
+                {data?.map((task) => (
+                  <Link key={task.id} href={`/dashboard/generations/${task.id}`} passHref>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground"
+                    >
+                      [{task.status}] - {task.id.slice(0, 12)}...
+                    </Button>
+                  </Link>
                 ))}
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground flex items-center"
-                >
-                  View All
-                  <ChevronRight className="ml-auto w-4 h-4" />
-                </Button>
+                <Link href="/dashboard/generations" passHref>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-foreground hover:bg-accent hover:text-accent-foreground flex items-center"
+                  >
+                    View All
+                    <ChevronRight className="ml-auto w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
             )}
           </ScrollArea>
@@ -130,7 +115,7 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
           </div>
         )}
         <div className={cn(
-          "flex items-center justify-between",
+          "w-full flex items-center justify-between",
           isCollapsed && "flex-col"
         )}>
           <ProfileDropdown isCollapsed={isCollapsed} />
@@ -187,8 +172,8 @@ function SidebarItemLink({ href, icon: Icon, label, isCollapsed, isActive }: Sid
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className={cn(
             "w-full text-foreground hover:bg-accent hover:text-accent-foreground",
             isCollapsed ? "px-0 justify-center" : "px-4 justify-start",
@@ -205,4 +190,3 @@ function SidebarItemLink({ href, icon: Icon, label, isCollapsed, isActive }: Sid
     </Link>
   )
 }
-

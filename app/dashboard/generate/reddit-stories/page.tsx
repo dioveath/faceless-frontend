@@ -12,6 +12,7 @@ import { StepFour } from './_components/step-four'
 import { LoadingScreen } from './_components/loading-screen'
 import { useAvailableCaptionPresets, useGenerateVideo } from '@/hooks/video/use-generate-video'
 import { GenerateVideoRequest } from '@/utils/api/types/video-request.types'
+import { redirect } from 'next/navigation'
 
 export default function AIVideoGenerator() {
   const [step, setStep] = useState(1)
@@ -22,10 +23,9 @@ export default function AIVideoGenerator() {
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1))
 
   const { mutateAsync, isPending, } = useGenerateVideo({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setIsGenerating(false)
-      // Here you would typically handle the generated video
-      console.log(data)
+      redirect(`/dashboard/generations/${data?.data?.task_id}`)
     },
     onError: (error) => {
       setIsGenerating(false)
