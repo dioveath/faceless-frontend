@@ -5,24 +5,34 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { VideoSettings } from "../_hooks/use-video-settings"
 import { StepWrapper } from './step-wrapper'
+import { VideoSettings as ResponseVideoSettings, RedditSettings } from "@/utils/api/types/video-response.types"
 
 type StepTwoProps = {
   settings: VideoSettings
   updateBackgroundSettings: (key: keyof VideoSettings['background'], value: any) => void
+  availableSettings: { video_settings: ResponseVideoSettings, reddit_settings: RedditSettings } | undefined
 }
 
-export function StepTwo({ settings, updateBackgroundSettings }: StepTwoProps) {
+export function StepTwo({ settings, updateBackgroundSettings, availableSettings }: StepTwoProps) {
+  if (!availableSettings) return null
+
+  const layoutStyleAllowedValues = availableSettings.video_settings.background.layout_style.allowed_values;
+  const backgroundVideosAllowedValues = availableSettings.video_settings.background.videos.allowed_values;
+  const backgroundAudiosAllowedValues = availableSettings.video_settings.background.audios.allowed_values;
+  const backgroundSpeedRange = availableSettings.video_settings.background.speed.range;
+  const backgroundVolumeRange = availableSettings.video_settings.background.volume.range;
+
   return (
     <StepWrapper>
       <div className="space-y-4">
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <Switch
             id="random-background"
             checked={settings.background.random}
             onCheckedChange={(checked) => updateBackgroundSettings('random', checked)}
           />
           <Label htmlFor="random-background">Random Background</Label>
-        </div>
+        </div> */}
         <div>
           <Label htmlFor="layout_style">Layout Style</Label>
           <Select
@@ -33,15 +43,16 @@ export function StepTwo({ settings, updateBackgroundSettings }: StepTwoProps) {
               <SelectValue placeholder="Select layout style" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="split_screen">Split Screen</SelectItem>
-              <SelectItem value="full_screen">Full Screen</SelectItem>
+              {layoutStyleAllowedValues?.map((value) => (
+                <SelectItem key={value} value={value}>{value}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
         <div>
           <Label>Background Videos</Label>
           <div className="grid grid-cols-2 gap-2">
-            {['minecraft', 'multiversus', 'fall-guys', 'subway-surfers', 'satisfying-cake'].map((video) => (
+            {backgroundVideosAllowedValues?.map((video) => (
               <Button
                 key={video}
                 variant={settings.background.videos.includes(video) ? "default" : "outline"}
@@ -60,7 +71,7 @@ export function StepTwo({ settings, updateBackgroundSettings }: StepTwoProps) {
         <div>
           <Label>Background Audios</Label>
           <div className="grid grid-cols-3 gap-2">
-            {['lofi', 'lofi-2', 'dragon-fly'].map((audio) => (
+            {backgroundAudiosAllowedValues?.map((audio) => (
               <Button
                 key={audio}
                 variant={settings.background.audios.includes(audio) ? "default" : "outline"}
@@ -80,9 +91,9 @@ export function StepTwo({ settings, updateBackgroundSettings }: StepTwoProps) {
           <Label htmlFor="speed">Background Speed: {settings.background.speed}x</Label>
           <Slider
             id="speed"
-            min={0.5}
-            max={2}
-            step={0.1}
+            min={backgroundSpeedRange?.min}
+            max={backgroundSpeedRange?.max}
+            step={backgroundSpeedRange?.step}
             value={[settings.background.speed]}
             onValueChange={([value]) => updateBackgroundSettings('speed', value)}
           />
@@ -91,9 +102,9 @@ export function StepTwo({ settings, updateBackgroundSettings }: StepTwoProps) {
           <Label htmlFor="volume">Background Volume: {Math.round(settings.background.volume * 100)}%</Label>
           <Slider
             id="volume"
-            min={0}
-            max={1}
-            step={0.01}
+            min={backgroundVolumeRange?.min}
+            max={backgroundVolumeRange?.max}
+            step={backgroundVolumeRange?.step}
             value={[settings.background.volume]}
             onValueChange={([value]) => updateBackgroundSettings('volume', value)}
           />

@@ -3,14 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronRight, Home } from 'lucide-react'
-import { 
-  Breadcrumb, 
-  BreadcrumbItem, 
-  BreadcrumbLink, 
-  BreadcrumbList, 
-  BreadcrumbPage, 
-  BreadcrumbSeparator 
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
 } from "@/components/ui/breadcrumb"
+import React from 'react'
 
 export function BreadcrumbNav() {
   const pathname = usePathname()
@@ -34,18 +35,20 @@ export function BreadcrumbNav() {
           const title = path.charAt(0).toUpperCase() + path.slice(1)
 
           return (
-            <BreadcrumbItem key={path}>
-              {isLast ? (
-                <BreadcrumbPage>{title}</BreadcrumbPage>
-              ) : (
-                <>
+            <React.Fragment key={path}>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{title}</BreadcrumbPage>
+                ) : (
                   <BreadcrumbLink href={href}>{title}</BreadcrumbLink>
-                  <BreadcrumbSeparator>
-                    <ChevronRight className="h-4 w-4" />
-                  </BreadcrumbSeparator>
-                </>
+                )}
+              </BreadcrumbItem>
+              {!isLast && (
+                <BreadcrumbSeparator>
+                  <ChevronRight className="h-4 w-4" />
+                </BreadcrumbSeparator>
               )}
-            </BreadcrumbItem>
+            </React.Fragment>
           )
         })}
       </BreadcrumbList>

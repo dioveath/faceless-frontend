@@ -14,6 +14,8 @@ apiClient.interceptors.request.use(async (config) => {
   const supabase = createClient();
   const { data } = await supabase.auth.getSession();
   const apiKey = data?.session?.access_token;
+
+  console.log(apiKey);
   
   if (apiKey) {
     config.headers["api-key"] = `${apiKey}`;

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, UseMutationOptions } from "@tanstack/react-query"
-import { fetchAvailableGenerateOptions, generateVideo } from "../../utils/api/video";
+import { fetchAvailableCaptionPresets, fetchAvailableGenerateOptions, generateVideo } from "../../utils/api/video";
 import { GenerateVideoRequest, AvailableOptionsResponse } from "../../utils/api/types/video.types";
-
+import { AvailableCaptionPresetsResponse } from "@/utils/api/types/video-response.types";
 
 export const useAvailableOptions = () => {
   return useQuery<AvailableOptionsResponse>({
@@ -10,10 +10,16 @@ export const useAvailableOptions = () => {
   })
 }
 
-export const useGenerateVideo = (onSuccess: any, onError: any) => {
+export const useGenerateVideo = (options?: UseMutationOptions<void, Error, GenerateVideoRequest>) => {
   return useMutation<void, Error, GenerateVideoRequest>({
     mutationFn: generateVideo,
-    onSuccess: onSuccess,
-    onError: onError,
+    ...options
   });
+}
+
+export const useAvailableCaptionPresets = () => {
+  return useQuery<AvailableCaptionPresetsResponse>({
+    queryKey: ["available-caption-presets"],
+    queryFn: fetchAvailableCaptionPresets,
+  })
 }

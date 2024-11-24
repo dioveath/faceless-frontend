@@ -41,11 +41,16 @@ export function StepFour({ settings, onGenerate }: StepFourProps) {
           <motion.div variants={itemVariants} className="bg-primary/10 p-4 rounded-lg">
             <h4 className="font-semibold mb-2">Content Type</h4>
             <p>{settings.content_type}</p>
+            <p>Reddit Subreddits: {settings.reddit.subreddits.join(', ')}</p>
+            <p>Min Characters: {settings.reddit.min_characters}</p>
+            <p>Max Characters: {settings.reddit.max_characters}</p>
           </motion.div>
           <motion.div variants={itemVariants} className="bg-primary/10 p-4 rounded-lg">
             <h4 className="font-semibold mb-2">Background</h4>
             <ul className="list-disc list-inside">
               <li>Random: {settings.background.random ? 'Yes' : 'No'}</li>
+              <li>Videos: {settings.background.videos.join(', ')}</li>
+              <li>Audios: {settings.background.audios.join(', ')}</li>
               <li>Layout: {settings.background.layout_style}</li>
               <li>Speed: {settings.background.speed}x</li>
               <li>Volume: {Math.round(settings.background.volume * 100)}%</li>
