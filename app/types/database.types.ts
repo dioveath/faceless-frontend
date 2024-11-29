@@ -158,47 +158,56 @@ export type Database = {
       }
       subscriptions: {
         Row: {
-          cancelation_date: string | null
+          cancel_at: string | null
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          cancellation_details: Json | null
           created_at: string
-          end_date: string | null
+          current_period_end: string
+          current_period_start: string
+          ended_at: string | null
           id: string
           metadata: Json | null
           price_id: string
-          renewal_date: string | null
-          start_date: string
           status: string
-          trial_end_date: string | null
-          trial_start_date: string | null
+          trial_end: string | null
+          trial_start: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          cancelation_date?: string | null
+          cancel_at?: string | null
+          cancel_at_period_end: boolean
+          canceled_at?: string | null
+          cancellation_details?: Json | null
           created_at?: string
-          end_date?: string | null
+          current_period_end: string
+          current_period_start: string
+          ended_at?: string | null
           id: string
           metadata?: Json | null
           price_id: string
-          renewal_date?: string | null
-          start_date: string
           status: string
-          trial_end_date?: string | null
-          trial_start_date?: string | null
+          trial_end?: string | null
+          trial_start?: string | null
           updated_at: string
           user_id: string
         }
         Update: {
-          cancelation_date?: string | null
+          cancel_at?: string | null
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          cancellation_details?: Json | null
           created_at?: string
-          end_date?: string | null
+          current_period_end?: string
+          current_period_start?: string
+          ended_at?: string | null
           id?: string
           metadata?: Json | null
           price_id?: string
-          renewal_date?: string | null
-          start_date?: string
           status?: string
-          trial_end_date?: string | null
-          trial_start_date?: string | null
+          trial_end?: string | null
+          trial_start?: string | null
           updated_at?: string
           user_id?: string
         }

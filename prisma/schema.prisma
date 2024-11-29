@@ -64,22 +64,25 @@ model prices {
 }
 
 model subscriptions {
-  id               String       @id // Stripe Subscription ID
-  user_id          String       @db.Uuid
-  user             users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  price_id         String
-  price            prices       @relation(fields: [price_id], references: [id], onDelete: Cascade)
-  status           String // active, trialing, past_due, canceled
-  start_date       DateTime
-  end_date         DateTime?
-  renewal_date     DateTime?
-  cancelation_date DateTime?
-  trial_start_date DateTime?
-  trial_end_date   DateTime?
-  created_at       DateTime     @default(now())
-  updated_at       DateTime     @updatedAt
-  usage_data       usage_data[] // Relation to usage data
-  metadata         Json?
+  id                   String       @id // Stripe Subscription ID
+  user_id              String       @db.Uuid
+  user                 users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  price_id             String
+  price                prices       @relation(fields: [price_id], references: [id], onDelete: Cascade)
+  status               String // active, trialing, past_due, canceled
+  cancel_at            DateTime? // A date in the future at which the subscription will automatically get canceled
+  cancel_at_period_end Boolean // Indicates whether the subscription will cancel at the end of the current period
+  canceled_at          DateTime? // Date the subscription was canceled
+  cancellation_details Json?
+  trial_start          DateTime?
+  trial_end            DateTime?
+  current_period_start DateTime
+  current_period_end   DateTime
+  ended_at             DateTime?
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+  usage_data           usage_data[] // Relation to usage data
+  metadata             Json?
 }
 
 model usage_data {

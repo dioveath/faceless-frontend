@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { PricingCard, PricingCardSkeleton } from './pricing-card'
-import { useSubscriptions } from '@/hooks/subscription/use-subscription'
+import { useSubscriptions, useUserSubscriptions } from '@/hooks/subscription/use-subscription'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
@@ -11,6 +11,7 @@ import { BillingCycleSwitch } from './billing-cycle-switch'
 export default function SubscriptionPage() {
   const { data, isLoading, error } = useSubscriptions()
   const [isYearly, setIsYearly] = useState(false)
+  const { data: userSubscriptions, isPending: userSubPending, error: userSubError } = useUserSubscriptions()
 
   const toggleBillingCycle = () => {
     setIsYearly(prev => !prev)
@@ -69,6 +70,7 @@ export default function SubscriptionPage() {
                   isPopular={product.name === 'Hobby Plan'}
                   index={index}
                   isYearly={isYearly}
+                  active={!!userSubscriptions?.find(sub => product.prices.some(price => price.id === sub.price_id))}
                 />
               ))
             )}

@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatPrice } from "@/utils/helpers"
-import { ProductWithPrices } from '@/hooks/subscription/use-subscription'
+import { getErrorRedirect } from "@/utils/redirect-toaster-helpers"
+import { ProductWithPrices, Price } from '@/hooks/subscription/use-subscription'
+import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { checkoutWithStripe, createStripePortal } from '@/utils/stripe/server'
+import { getStripe } from '@/utils/stripe/client'
 
 interface PricingCardProps {
   product: ProductWithPrices
@@ -14,14 +19,59 @@ interface PricingCardProps {
   isPopular: boolean
   index: number
   isYearly: boolean
+  active?: boolean  
 }
 
-export function PricingCard({ product, features, isPopular, index, isYearly }: PricingCardProps) {
+export function PricingCard({ product, features, isPopular, index, isYearly, active }: PricingCardProps) {
   const monthlyPrice = product.prices.find(p => p.interval === 'month')
   const yearlyPrice = product.prices.find(p => p.interval === 'year')
   const currentPrice = isYearly ? yearlyPrice : monthlyPrice
-  const yearlyDiscount = monthlyPrice?.unit_amount && yearlyPrice?.unit_amount ? 
+  const yearlyDiscount = monthlyPrice?.unit_amount && yearlyPrice?.unit_amount ?
     ((monthlyPrice.unit_amount * 12 - yearlyPrice.unit_amount) / (monthlyPrice.unit_amount * 12) * 100).toFixed(0) : '0'
+
+  const router = useRouter()
+  const currentPath = usePathname()
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [isSubscribed, setIsSubscribed] = useState(false) // test
+  
+  const handleStripeCheckout = async () => {
+    setIsCheckingOut(true)
+    const price = currentPrice as Price
+
+    const { errorRedirect, sessionId } = await checkoutWithStripe(price, currentPath)
+
+    if (errorRedirect) {
+      setIsCheckingOut(false)
+      return router.push(errorRedirect)
+    }
+
+    if (!sessionId) {
+      setIsCheckingOut(false)
+      return router.push(
+        getErrorRedirect(
+          currentPath,
+          'An unknown error occurred',
+          'Please try again later or contact support.'
+        )
+      )
+    }
+
+    const stripe = await getStripe()
+    stripe?.redirectToCheckout({ sessionId })
+
+    setIsCheckingOut(false)
+  }
+
+
+  const handleStripePortal = async () => {
+    setIsCheckingOut(true)
+    const url = await createStripePortal(currentPath)
+
+    setIsCheckingOut(false)
+    router.push(url)
+  }
+
+
 
   return (
     <motion.div
@@ -68,8 +118,8 @@ export function PricingCard({ product, features, isPopular, index, isYearly }: P
           )}
           <ul className="mt-6 space-y-4">
             {features.map((feature) => (
-              <motion.li 
-                key={feature} 
+              <motion.li
+                key={feature}
                 className="flex items-start"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -84,14 +134,14 @@ export function PricingCard({ product, features, isPopular, index, isYearly }: P
           </ul>
         </CardContent>
         <CardFooter className="mt-auto">
-          <Button 
-            className={`w-full text-lg py-3 ${
-              isPopular 
-                ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500' 
-                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-            } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
+          <Button
+            onClick={active ? handleStripePortal : handleStripeCheckout}
+            className={`w-full text-lg py-3 ${isPopular
+              ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+              : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+              } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
           >
-            {product.name === 'Free' ? 'Get Started' : 'Subscribe Now'}
+            {active ? "Manage" : (product.name === 'Free' ? 'Get Started' : 'Subscribe Now')}
           </Button>
         </CardFooter>
       </Card>

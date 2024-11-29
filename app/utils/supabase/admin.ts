@@ -200,8 +200,16 @@ const copyBillingDetailsToCustomer = async (
     const customer = payment_method.customer as string;
     const { name, phone, address } = payment_method.billing_details;
     if (!name || !phone || !address) return;
-    // @ts-ignore
-    await stripe.customers.update(customer, { name, phone, address });
+    const filteredAddress = {
+        ...address,
+        city: address.city ?? undefined,
+        country: address.country ?? undefined,
+        line1: address.line1 ?? undefined,
+        line2: address.line2 ?? undefined,
+        postal_code: address.postal_code ?? undefined,
+        state: address.state ?? undefined
+    };
+    await stripe.customers.update(customer, { name, phone, address: filteredAddress });
     const { error: updateError } = await supabaseAdmin
         .from('users')
         .update({
@@ -239,8 +247,6 @@ const manageSubscriptionStatusChange = async (
         metadata: subscription.metadata,
         status: subscription.status,
         price_id: subscription.items.data[0].price.id,
-        //TODO check quantity on subscription
-        // @ts-ignore
         // quantity: subscription.quantity,
         cancel_at_period_end: subscription.cancel_at_period_end,
         cancel_at: subscription.cancel_at
@@ -255,7 +261,7 @@ const manageSubscriptionStatusChange = async (
         current_period_end: toDateTime(
             subscription.current_period_end
         ).toISOString(),
-        created: toDateTime(subscription.created).toISOString(),
+        created_at: toDateTime(subscription.created).toISOString(),
         ended_at: subscription.ended_at
             ? toDateTime(subscription.ended_at).toISOString()
             : null,
@@ -264,7 +270,8 @@ const manageSubscriptionStatusChange = async (
             : null,
         trial_end: subscription.trial_end
             ? toDateTime(subscription.trial_end).toISOString()
-            : null
+            : null,
+        updated_at: toDateTime(subscription.created).toISOString()
     };
 
     const { error: upsertError } = await supabaseAdmin
@@ -279,7 +286,6 @@ const manageSubscriptionStatusChange = async (
     // For a new subscription copy the billing details to the customer object.
     // NOTE: This is a costly operation and should happen at the very end.
     if (createAction && subscription.default_payment_method && uuid)
-        //@ts-ignore
         await copyBillingDetailsToCustomer(
             uuid,
             subscription.default_payment_method as Stripe.PaymentMethod

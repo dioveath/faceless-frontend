@@ -6,18 +6,21 @@ import { createClient } from '@/utils/supabase/server';
 import { createOrRetrieveCustomer } from '@/utils/supabase/admin';
 import {
     getURL,
-    getErrorRedirect,
     calculateTrialEndUnixTimestamp
 } from '@/utils/helpers';
+import { getErrorRedirect } from '../redirect-toaster-helpers';
+import type { Tables } from '@/types/database.types';
 
 type CheckoutResponse = {
     errorRedirect?: string;
     sessionId?: string;
 };
 
+type Price = Tables<'prices'>;
+
 export async function checkoutWithStripe(
     price: Price,
-    redirectPath: string = '/account'
+    redirectPath: string = '/dashboard'
 ): Promise<CheckoutResponse> {
     try {
         // Get the user from Supabase auth
@@ -116,7 +119,7 @@ export async function checkoutWithStripe(
     }
 }
 
-export async function createStripePortal(currentPath: string) {
+export async function createStripePortal(currentPath: string): Promise<string> {
     try {
         const supabase = await createClient();
         const {
@@ -149,7 +152,7 @@ export async function createStripePortal(currentPath: string) {
         try {
             const { url } = await stripe.billingPortal.sessions.create({
                 customer,
-                return_url: getURL('/account')
+                return_url: getURL('/dashboard')
             });
             if (!url) {
                 throw new Error('Could not create billing portal');
