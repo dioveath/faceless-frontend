@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createClient } from "../supabase/client";
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = "http://192.168.1.71:8000/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

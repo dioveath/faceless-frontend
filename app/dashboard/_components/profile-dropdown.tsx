@@ -80,7 +80,7 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
           <CreditCard className="w-4 h-4 mr-2" />
           Billing
         </DropdownMenuItem>
-        <DeleteAlertDialog handleLogout={logout} loading={loading} />
+        <DeleteAlertDialog handleLogout={handleLogout} loading={loading} />
         <div className="p-4">
           <div className="text-sm text-muted-foreground mb-2">Preferences</div>
           <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground">
@@ -123,7 +123,7 @@ const DeleteAlertDialog = ({ handleLogout, loading }: LogoutAlertDialogProps) =>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleLogout}>Delete</AlertDialogAction>
+          <AlertDialogAction onClick={handleLogout}>Log out</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

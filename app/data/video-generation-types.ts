@@ -24,6 +24,18 @@ export const videoGenerationTypes = [
       ],
     },
     {
+      id: 'realistic-ai-voiceover',
+      title: 'Realistic AI Voiceover',
+      description: 'Generate human-like voiceovers for various types of content.',
+      imageUrl: '/placeholder.svg?height=200&width=300',
+      features: [
+        'Multiple voice options and accents',
+        'Emotion and tone customization',
+        'Text-to-speech conversion',
+        'Background music and sound effects',
+      ],
+    },
+    {
       id: 'would-you-rather',
       title: 'Would You Rather Video',
       description: 'Generate interactive "Would You Rather" scenarios in video format.',
