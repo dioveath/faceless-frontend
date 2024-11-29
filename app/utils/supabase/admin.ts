@@ -18,14 +18,6 @@ const supabaseAdmin = createClient(
 );
 
 const upsertProductRecord = async (product: Stripe.Product) => {
-    const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-        process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY || ""
-    )
-
-    console.log("URL", process.env.NEXT_PUBLIC_SUPABASE_URL)
-    console.log("SERVICE_KEY", process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY)
-
     const productData: Product = {
         id: product.id,
         active: product.active,
@@ -86,14 +78,6 @@ const upsertPriceRecord = async (
 };
 
 const deleteProductRecord = async (product: Stripe.Product) => {
-    const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-        process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY || ""
-    )
-
-    console.log("URL", process.env.NEXT_PUBLIC_SUPABASE_URL)
-    console.log("SERVICE_KEY", process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY)
-
     const { error: deletionError } = await supabaseAdmin
         .from('products')
         .delete()

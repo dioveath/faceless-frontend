@@ -1,7 +1,7 @@
-import Subscription from "./components/main-content";
+"use client"
 
-export default function Page(){
+import SubscriptionPage from "./components/main-content"
 
-    return <Subscription/>
-
+export default function Page() {
+    return <SubscriptionPage />
 }

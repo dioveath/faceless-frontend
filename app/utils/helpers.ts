@@ -22,3 +22,20 @@ export const calculateTrialEndUnixTimestamp = (
     ); // Add trial days
     return Math.floor(trialEnd.getTime() / 1000); // Convert to Unix timestamp in seconds
 };
+
+
+/**
+ * Format price
+ * @param amount 
+ * @param currency 
+ * @returns 
+ */
+export function formatPrice(amount: number, currency: string = 'USD'): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+    }).format(amount / 100);
+  }
+  
+  
