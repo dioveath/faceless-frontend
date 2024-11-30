@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { checkoutWithStripe, createStripePortal } from '@/utils/stripe/server'
 import { getStripe } from '@/utils/stripe/client'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 interface PricingCardProps {
   product: ProductWithPrices
@@ -19,7 +20,7 @@ interface PricingCardProps {
   isPopular: boolean
   index: number
   isYearly: boolean
-  active?: boolean  
+  active?: boolean
 }
 
 export function PricingCard({ product, features, isPopular, index, isYearly, active }: PricingCardProps) {
@@ -32,8 +33,7 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
   const router = useRouter()
   const currentPath = usePathname()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
-  const [isSubscribed, setIsSubscribed] = useState(false) // test
-  
+
   const handleStripeCheckout = async () => {
     setIsCheckingOut(true)
     const price = currentPrice as Price
@@ -134,15 +134,16 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
           </ul>
         </CardContent>
         <CardFooter className="mt-auto">
-          <Button
-            onClick={active ? handleStripePortal : handleStripeCheckout}
-            className={`w-full text-lg py-3 ${isPopular
-              ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
-              : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-              } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
-          >
-            {active ? "Manage" : (product.name === 'Free' ? 'Get Started' : 'Subscribe Now')}
-          </Button>
+            <Button
+              onClick={active ? handleStripePortal : handleStripeCheckout}
+              className={`w-full text-lg py-3 ${isPopular
+                ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
+            >
+              {isCheckingOut && <LoadingSpinner size={24} className="mx-auto" />}
+              {!isCheckingOut && (active ? "Manage" : (product.name === 'Free Plan' ? 'Get Started' : 'Subscribe Now'))}
+            </Button>
         </CardFooter>
       </Card>
     </motion.div>

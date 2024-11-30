@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils"
 import { useUser } from "@/hooks/user/use-user"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { redirect } from "next/navigation"
+import { useUserSubscriptions } from "@/hooks/subscription/use-subscription"
+import Link from "next/link"
 
 interface UserProfile {
   name: string
@@ -21,6 +23,7 @@ interface UserProfile {
 
 export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
   const { user, loading, logout } = useUser()
+  const { data: userSubscriptions, isPending: userSubPending, error: userSubError } = useUserSubscriptions()
 
   if (loading) {
     return (
@@ -43,9 +46,10 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
 
   const handleLogout = async () => {
     await logout()
-    // refresh the page to clear the cache
-    redirect("/login")
+    redirect("/auth/login")
   }
+
+
 
   return (
     <DropdownMenu>
@@ -80,7 +84,12 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
           <CreditCard className="w-4 h-4 mr-2" />
           Billing
         </DropdownMenuItem>
-        <DeleteAlertDialog handleLogout={handleLogout} loading={loading} />
+        {/* FIXME */}
+        {/* <DeleteAlertDialog handleLogout={handleLogout} loading={loading} /> */}
+        <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground" disabled={loading} onClick={handleLogout}>
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out
+        </DropdownMenuItem>
         <div className="p-4">
           <div className="text-sm text-muted-foreground mb-2">Preferences</div>
           <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground">
@@ -93,7 +102,9 @@ export function ProfileDropdown({ isCollapsed }: { isCollapsed: boolean }) {
           </DropdownMenuItem>
         </div>
         <div className="p-4 pt-0">
-          <Button variant="outline" className="w-full text-foreground border-border hover:bg-accent hover:text-accent-foreground">Upgrade Plan</Button>
+          <Link href="/dashboard/subscription" passHref>
+            <Button variant="outline" className="w-full text-foreground border-border hover:bg-accent hover:text-accent-foreground">Upgrade Plan</Button>
+          </Link>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
