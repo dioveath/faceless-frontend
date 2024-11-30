@@ -8,7 +8,7 @@ import {
     getURL,
     calculateTrialEndUnixTimestamp
 } from '@/utils/helpers';
-import { getErrorRedirect } from '../redirect-toaster-helpers';
+import { getErrorRedirect, getToastRedirect } from '../redirect-toaster-helpers';
 import type { Tables } from '@/types/database.types';
 
 type CheckoutResponse = {
@@ -152,7 +152,7 @@ export async function createStripePortal(currentPath: string): Promise<string> {
         try {
             const { url } = await stripe.billingPortal.sessions.create({
                 customer,
-                return_url: getURL('/dashboard')
+                return_url: getURL(currentPath)
             });
             if (!url) {
                 throw new Error('Could not create billing portal');
@@ -178,4 +178,141 @@ export async function createStripePortal(currentPath: string): Promise<string> {
             );
         }
     }
+}
+
+
+type SubscriptionChangeResponse = {
+    sessionId?: string;
+    redirectPath?: string;
+    errorRedirect?: string;
+};
+
+export async function handleSubscriptionChange(price: Price, redirectPath: string = "/dashboard"): Promise<SubscriptionChangeResponse> {
+    try {
+        const supabase = await createClient();
+        const { error, data: { user } } = await supabase.auth.getUser();
+
+        if (error || !user) {
+            throw new Error('Could not get user session.');
+        }
+
+        const customer = await createOrRetrieveCustomer({
+            uuid: user.id || '',
+            email: user.email || ''
+        });
+
+        const subscriptions = await stripe.subscriptions.list({
+            customer,
+            status: 'active',
+        });
+
+        if (subscriptions.data.length > 0) {
+            const currentSubscription = subscriptions.data[0];
+            const subscriptionItemId = currentSubscription.items.data[0].id;
+
+            await stripe.subscriptions.update(currentSubscription.id, {
+                items: [{ id: subscriptionItemId, price: price.id }],
+                proration_behavior: 'always_invoice', // Instantly prorate the subscription
+            });
+
+            return {
+                sessionId: undefined,
+                redirectPath: getToastRedirect(
+                    redirectPath,
+                    'status',
+                    'Subscription updated',
+                    'Your subscription has been updated.'
+                )
+            };
+        } else {
+            // No active subscription; create a new one
+            const sessionResponse = await checkoutWithStripe(price, '/dashboard');
+            return sessionResponse
+        }
+    } catch (error: any) {
+        console.error(error);
+        return {
+            errorRedirect: getErrorRedirect(
+                '/dashboard',
+                error?.message || 'An error occurred.',
+                'Please try again later or contact support.'
+            ),
+        };
+    }
+}
+
+// function isUpgrade(currentPriceId: string, newPriceId: string): boolean {
+//     const currentPlan = await getPlanLimits(currentPriceId);
+//     const newPlan = await getPlanLimits(newPriceId);
+//     return newPlan.video_minutes > currentPlan.video_minutes;
+// }
+
+async function upgradeSubscription(subscriptionId: string, priceId: string): Promise<string> {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscriptionItemId = subscription.items.data[0].id;
+
+    await stripe.subscriptions.update(subscriptionId, {
+        items: [{ id: subscriptionItemId, price: priceId }],
+        proration_behavior: 'always_invoice', // Instantly prorate the subscription
+    });
+
+    return subscription.id;
+}
+
+async function downgradeSubscription(subscriptionId: string, priceId: string) {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscriptionItemId = subscription.items.data[0].id;
+
+    // const currentUsage = await getUserUsage(subscription.customer as string);
+    // const newPlanLimits = await getPlanLimits(priceId);
+
+    // if (currentUsage > newPlanLimits) {
+    //     throw new Error('Cannot downgrade subscription due to exceeding usage.');
+    // }
+
+    await stripe.subscriptions.update(subscriptionId, {
+        items: [{ id: subscriptionItemId, price: priceId }],
+        proration_behavior: 'always_invoice', // Instantly prorate the subscription
+    });
+
+    return subscription.id;
+}
+
+async function getActiveSubscription(customerId: string): Promise<Stripe.Subscription | null> {
+    const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: 'active',
+    });
+
+    return subscriptions.data.length > 0 ? subscriptions.data[0] : null;
+}
+
+
+type UsageData = {
+    video_minutes: number;
+    tts_characters: number;
+}
+
+async function getUserUsage(subscriptionId: string): Promise<UsageData> {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from('usage_data').select('*').eq('subscription_id', subscriptionId);
+    if (error) {
+        throw new Error('Error fetching usage data.');
+    }
+    const totalMinutes = data.find((d: any) => d.metric_name === 'video_minutes')?.usage_amount || 0;
+    const totalCharacters = data.find((d: any) => d.metric_name === 'tts_characters')?.usage_amount || 0;
+    return {
+         video_minutes: totalMinutes,
+        tts_characters: totalCharacters
+    }
+}
+
+type UsageLimit = {
+    video_minutes: number;
+    tts_characters: number;
+}
+
+async function getPlanLimits(priceId: string): Promise<UsageLimit> {
+    const price = await stripe.prices.retrieve(priceId);
+    return price.metadata as unknown as UsageLimit;
 }

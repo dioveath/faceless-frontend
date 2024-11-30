@@ -271,7 +271,7 @@ const manageSubscriptionStatusChange = async (
         trial_end: subscription.trial_end
             ? toDateTime(subscription.trial_end).toISOString()
             : null,
-        updated_at: toDateTime(subscription.created).toISOString()
+        updated_at: new Date().toISOString()
     };
 
     const { error: upsertError } = await supabaseAdmin

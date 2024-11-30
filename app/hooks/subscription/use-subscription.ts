@@ -17,7 +17,7 @@ export const useSubscriptions = () => {
 export const useUserSubscriptions = () => {
     const { user } = useUser()
     return useQuery<Subscription[]>({
-        queryKey: ["user-subscriptions", user?.id],
+        queryKey: ["user-subscription"],
         queryFn: () => fetchUserSubscriptions(user?.id || ""),
         enabled: !!user
     })

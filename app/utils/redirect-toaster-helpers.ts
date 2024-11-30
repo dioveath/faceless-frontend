@@ -3,7 +3,7 @@ const toastKeyMap: { [key: string]: string[] } = {
     error: ['error', 'error_description']
 };
 
-const getToastRedirect = (
+export const getToastRedirect = (
     path: string,
     toastType: string,
     toastName: string,

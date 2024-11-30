@@ -8,11 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatPrice } from "@/utils/helpers"
 import { getErrorRedirect } from "@/utils/redirect-toaster-helpers"
 import { ProductWithPrices, Price } from '@/hooks/subscription/use-subscription'
-import { useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-import { checkoutWithStripe, createStripePortal } from '@/utils/stripe/server'
+import { useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { checkoutWithStripe, createStripePortal, handleSubscriptionChange } from '@/utils/stripe/server'
 import { getStripe } from '@/utils/stripe/client'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface PricingCardProps {
   product: ProductWithPrices
@@ -33,16 +34,30 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
   const router = useRouter()
   const currentPath = usePathname()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const queryClient = useQueryClient()
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ['user-subscription'] })
+    }, 1000 * 5)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleStripeCheckout = async () => {
     setIsCheckingOut(true)
     const price = currentPrice as Price
 
-    const { errorRedirect, sessionId } = await checkoutWithStripe(price, currentPath)
+    const { redirectPath, errorRedirect, sessionId } = await handleSubscriptionChange(price, "/dashboard/subscription")
 
     if (errorRedirect) {
       setIsCheckingOut(false)
       return router.push(errorRedirect)
+    }
+
+    if (redirectPath) {
+      setIsCheckingOut(false)
+      return router.push(redirectPath)
     }
 
     if (!sessionId) {
@@ -58,10 +73,8 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
 
     const stripe = await getStripe()
     stripe?.redirectToCheckout({ sessionId })
-
     setIsCheckingOut(false)
   }
-
 
   const handleStripePortal = async () => {
     setIsCheckingOut(true)
@@ -70,8 +83,6 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
     setIsCheckingOut(false)
     router.push(url)
   }
-
-
 
   return (
     <motion.div
@@ -134,16 +145,16 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
           </ul>
         </CardContent>
         <CardFooter className="mt-auto">
-            <Button
-              onClick={active ? handleStripePortal : handleStripeCheckout}
-              className={`w-full text-lg py-3 ${isPopular
-                ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
-                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-                } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
-            >
-              {isCheckingOut && <LoadingSpinner size={24} className="mx-auto" />}
-              {!isCheckingOut && (active ? "Manage" : (product.name === 'Free Plan' ? 'Get Started' : 'Subscribe Now'))}
-            </Button>
+          <Button
+            onClick={active ? handleStripePortal : handleStripeCheckout}
+            className={`w-full text-lg py-3 ${isPopular
+              ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
+              : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+              } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
+          >
+            {isCheckingOut && <LoadingSpinner size={24} className="mx-auto" />}
+            {!isCheckingOut && (active ? "Manage" : (product.name === 'Free Plan' ? 'Get Started' : 'Subscribe Now'))}
+          </Button>
         </CardFooter>
       </Card>
     </motion.div>
