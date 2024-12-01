@@ -1,4 +1,5 @@
 import React from "react"
+import { motion } from "framer-motion"
 import { TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -50,34 +51,54 @@ const historyItems = [
 export default function HistoryTab() {
   return (
     <TabsContent value="history" className="h-[calc(100%-40px)] overflow-auto">
-      <div className="space-y-2">
-        {historyItems.map((item) => (
-          <HistoryItem key={item.id} item={item} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-2"
+      >
+        {historyItems.map((item, index) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.5 }}
+          >
+            <HistoryItem item={item} />
+          </motion.div>
         ))}
-        <div className="flex justify-between items-center pt-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9, duration: 0.5 }}
+          className="flex justify-between items-center pt-4"
+        >
           <Button variant="outline" size="sm" disabled>
             Previous
           </Button>
           <Button variant="outline" size="sm">
             Next
           </Button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </TabsContent>
   )
 }
 
 type HistoryItemProps = {
-    item: {
-        id: number
-        title: string
-        timestamp: string
-    }
+  item: {
+    id: number
+    title: string
+    timestamp: string
+  }
 }
 
-function HistoryItem({ item }: HistoryItemProps) {
+function HistoryItem({ item } : HistoryItemProps) {
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 group">
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 group"
+    >
       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
         <Volume2 className="w-4 h-4 text-muted-foreground" />
       </div>
@@ -85,7 +106,11 @@ function HistoryItem({ item }: HistoryItemProps) {
         <p className="text-sm truncate">{item.title}</p>
         <p className="text-xs text-muted-foreground">{item.timestamp}</p>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+        className="flex items-center gap-1"
+      >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -102,7 +127,8 @@ function HistoryItem({ item }: HistoryItemProps) {
           <Download className="h-4 w-4" />
           <span className="sr-only">Download</span>
         </Button>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
+

@@ -17,7 +17,7 @@ datasource db {
 model users {
   id              String          @id @default(uuid()) @db.Uuid
   email           String          @unique
-  account_status  String          @default("active") // active, suspended, canceled
+  status          account_status  @default(active)
   created_at      DateTime        @default(now())
   updated_at      DateTime        @updatedAt
   billing_address Json?
@@ -25,6 +25,7 @@ model users {
   subscriptions   subscriptions[] // Relation to subscriptions
   usage_data      usage_data[] // Relation to usage data
   notifications   notifications[] // Relation to notifications
+  generations     generations[]
 }
 
 model customers {
@@ -64,11 +65,11 @@ model prices {
 }
 
 model subscriptions {
-  id                   String       @id // Stripe Subscription ID
-  user_id              String       @db.Uuid
-  user                 users        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id                   String        @id // Stripe Subscription ID
+  user_id              String        @db.Uuid
+  user                 users         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   price_id             String
-  price                prices       @relation(fields: [price_id], references: [id], onDelete: Cascade)
+  price                prices        @relation(fields: [price_id], references: [id], onDelete: Cascade)
   status               String // active, trialing, past_due, canceled
   cancel_at            DateTime? // A date in the future at which the subscription will automatically get canceled
   cancel_at_period_end Boolean // Indicates whether the subscription will cancel at the end of the current period
@@ -79,9 +80,10 @@ model subscriptions {
   current_period_start DateTime
   current_period_end   DateTime
   ended_at             DateTime?
-  created_at           DateTime     @default(now())
-  updated_at           DateTime     @updatedAt
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
   usage_data           usage_data[] // Relation to usage data
+  generations          generations[]
   metadata             Json?
 }
 
@@ -112,11 +114,105 @@ model webhook_logs {
 }
 
 model notifications {
-  id         Int      @id @default(autoincrement())
-  user_id    String   @db.Uuid
-  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  type       String // payment_failed, subscription_updated, etc.
+  id         Int               @id @default(autoincrement())
+  user_id    String            @db.Uuid
+  user       users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  type       notification_type
   message    String
-  sent_at    DateTime @default(now())
-  created_at DateTime @default(now())
+  sent_at    DateTime          @default(now())
+  created_at DateTime          @default(now())
+}
+
+model generations {
+  id              Int               @id @default(autoincrement())
+  user_id         String            @db.Uuid
+  user            users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  subscription_id String?
+  subscription    subscriptions?    @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
+  type            generation_type
+  status          generation_status @default(Pending)
+  celery_task_id  String? // Celery task UUID
+  input_params    Json // Task parameters
+  output_url      String? // Generated content location
+  error_message   String?
+  usage_amount    Float? // Resource usage
+  usage_metric    usage_metric?
+  cost            Int? // In smallest currency unit
+  priority        Int               @default(0)
+  retries         Int               @default(0)
+  max_retries     Int               @default(3)
+  scheduled_at    DateTime? // For future tasks
+  started_at      DateTime?
+  completed_at    DateTime?
+  failed_at       DateTime?
+  canceled_at     DateTime?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  background_task background_tasks?
+
+  @@index([status])
+  @@index([type])
+}
+
+// celery_task model to track background tasks
+model background_tasks {
+  id            String      @id // Celery task UUID
+  generation_id Int         @unique
+  generation    generations @relation(fields: [generation_id], references: [id], onDelete: Cascade)
+  status        task_status
+  result        Json?
+  traceback     String?
+  runtime       Float?
+  worker        String?
+  queue         String?
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+}
+
+// Enums for better data integrity and clarity
+enum generation_type {
+  Video
+  Audio
+  Image
+  Text
+}
+
+enum generation_status {
+  Pending
+  Scheduled
+  Processing
+  Completed
+  Failed
+  Canceled
+}
+
+enum task_status {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  RETRY
+  REVOKED
+}
+
+enum usage_metric {
+  VideoMinutes
+  AudioMinutes
+  Characters
+  ImagesGenerated
+}
+
+enum notification_type {
+  PaymentFailed
+  SubscriptionUpdated
+  GenerationCompleted
+  GenerationFailed
+  UsageLimitApproaching
+  UsageLimitExceeded
+}
+
+enum account_status {
+  active
+  suspended
+  canceled
 }
