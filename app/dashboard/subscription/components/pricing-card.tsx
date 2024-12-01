@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatPrice } from "@/utils/helpers"
 import { getErrorRedirect } from "@/utils/redirect-toaster-helpers"
-import { ProductWithPrices, Price } from '@/hooks/subscription/use-subscription'
+import { ProductWithPrices, Price, useUserSubscriptions } from '@/hooks/subscription/use-subscription'
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { checkoutWithStripe, createStripePortal, handleSubscriptionChange } from '@/utils/stripe/server'
@@ -21,10 +21,10 @@ interface PricingCardProps {
   isPopular: boolean
   index: number
   isYearly: boolean
-  active?: boolean
+  activePrice?: Price
 }
 
-export function PricingCard({ product, features, isPopular, index, isYearly, active }: PricingCardProps) {
+export function PricingCard({ product, features, isPopular, index, isYearly, activePrice }: PricingCardProps) {
   const monthlyPrice = product.prices.find(p => p.interval === 'month')
   const yearlyPrice = product.prices.find(p => p.interval === 'year')
   const currentPrice = isYearly ? yearlyPrice : monthlyPrice
@@ -35,7 +35,7 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
   const currentPath = usePathname()
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const queryClient = useQueryClient()
-
+  const [isActive, setIsActive] = useState(activePrice?.product_id === product.id)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -82,6 +82,18 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
 
     setIsCheckingOut(false)
     router.push(url)
+  }
+
+  const getButtonLabel = (displayPrice?: Price, activePrice?: Price) => {
+    if(activePrice?.id === displayPrice?.id) {
+      return 'Manage'
+    } else if((activePrice?.unit_amount || 0) < (displayPrice?.unit_amount || 0)) {
+      return 'Upgrade Now'
+    } else if((activePrice?.unit_amount || 0) > (displayPrice?.unit_amount || 0)) {
+      return 'Downgrade'
+    } else {
+      return 'Subscribe'
+    }
   }
 
   return (
@@ -146,14 +158,14 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
         </CardContent>
         <CardFooter className="mt-auto">
           <Button
-            onClick={active ? handleStripePortal : handleStripeCheckout}
+            onClick={isActive ? handleStripePortal : handleStripeCheckout}
             className={`w-full text-lg py-3 ${isPopular
               ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500'
               : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
               } text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800`}
           >
             {isCheckingOut && <LoadingSpinner size={24} className="mx-auto" />}
-            {!isCheckingOut && (active ? "Manage" : (product.name === 'Free Plan' ? 'Get Started' : 'Subscribe Now'))}
+            {!isCheckingOut && getButtonLabel(currentPrice, activePrice)}
           </Button>
         </CardFooter>
       </Card>

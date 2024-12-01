@@ -98,6 +98,8 @@ model usage_data {
   billing_cycle_end   DateTime
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
+
+  @@unique([subscription_id, metric_name])
 }
 
 model webhook_logs {

@@ -197,6 +197,7 @@ const copyBillingDetailsToCustomer = async (
     payment_method: Stripe.PaymentMethod
 ) => {
     //Todo: check this assertion
+    console.log("copyBillingDetailsToCustomer", payment_method.billing_details);
     const customer = payment_method.customer as string;
     const { name, phone, address } = payment_method.billing_details;
     if (!name || !phone || !address) return;
@@ -219,6 +220,30 @@ const copyBillingDetailsToCustomer = async (
         .eq('id', uuid);
     if (updateError) throw new Error(`Customer update failed: ${updateError.message}`);
 };
+
+
+const upsertUsageData = async (uuid: string, subscriptionId: string) => {
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const METRICS = ['video_minutes', 'tts_characters'];
+    METRICS.forEach(async (metric) => {
+        const usageData: TablesInsert<'usage_data'> = {
+            user_id: uuid,
+            subscription_id: subscriptionId,
+            metric_name: metric,
+            usage_amount: 0,
+            limit_amount: -1, // not used at the moment
+            billing_cycle_start: subscription.current_period_start ? toDateTime(subscription.current_period_start).toISOString() : '',
+            billing_cycle_end: subscription.current_period_end ? toDateTime(subscription.current_period_end).toISOString() : '',
+            updated_at: new Date().toISOString()
+        };
+        const { error: usageError } = await supabaseAdmin
+            .from('usage_data')
+            .upsert([usageData], { onConflict: 'subscription_id,metric_name' });
+        if (usageError)
+            throw new Error(`Usage data insert failed: ${usageError.message}`);
+        console.log(`Usage data inserted for subscription [${subscription.id}]`);
+    });
+}
 
 const manageSubscriptionStatusChange = async (
     subscriptionId: string,
@@ -285,16 +310,21 @@ const manageSubscriptionStatusChange = async (
 
     // For a new subscription copy the billing details to the customer object.
     // NOTE: This is a costly operation and should happen at the very end.
-    if (createAction && subscription.default_payment_method && uuid)
+    if (createAction && subscription.default_payment_method && uuid) {
         await copyBillingDetailsToCustomer(
             uuid,
             subscription.default_payment_method as Stripe.PaymentMethod
         );
+
+        // Create a usage_data record for the subscription
+        await upsertUsageData(uuid, subscriptionId);
+    }
 };
 
 export {
     upsertProductRecord,
     upsertPriceRecord,
+    upsertUsageData,
     deleteProductRecord,
     deletePriceRecord,
     createOrRetrieveCustomer,

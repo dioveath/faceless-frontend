@@ -195,25 +195,37 @@ export async function handleSubscriptionChange(price: Price, redirectPath: strin
         if (error || !user) {
             throw new Error('Could not get user session.');
         }
-
+        
         const customer = await createOrRetrieveCustomer({
             uuid: user.id || '',
             email: user.email || ''
         });
 
-        const subscriptions = await stripe.subscriptions.list({
-            customer,
-            status: 'active',
-        });
+        const currentSubscription = await getActiveSubscription(customer);
 
-        if (subscriptions.data.length > 0) {
-            const currentSubscription = subscriptions.data[0];
-            const subscriptionItemId = currentSubscription.items.data[0].id;
+        if (currentSubscription) {
+            const subscriptionItemId = currentSubscription.items.data[0].price.id;
+            if(subscriptionItemId === price.id) {
+                return {
+                    errorRedirect: getToastRedirect(
+                        redirectPath,
+                        'status',
+                        'Subscription unchanged',
+                        'You are already subscribed to this plan.'
+                    )
+                };
+            }
 
-            await stripe.subscriptions.update(currentSubscription.id, {
-                items: [{ id: subscriptionItemId, price: price.id }],
-                proration_behavior: 'always_invoice', // Instantly prorate the subscription
-            });
+            if(await isUpgrade(subscriptionItemId, price.id)) {
+                await upgradeSubscription(currentSubscription.id, price.id);
+            } else {
+                await downgradeSubscription(currentSubscription.id, price.id);
+            }
+
+            // await stripe.subscriptions.update(currentSubscription.id, {
+            //     items: [{ id: subscriptionItemId, price: price.id }],
+            //     proration_behavior: 'always_invoice', // Instantly prorate the subscription
+            // });
 
             return {
                 sessionId: undefined,
@@ -226,14 +238,14 @@ export async function handleSubscriptionChange(price: Price, redirectPath: strin
             };
         } else {
             // No active subscription; create a new one
-            const sessionResponse = await checkoutWithStripe(price, '/dashboard');
+            const sessionResponse = await checkoutWithStripe(price, redirectPath);
             return sessionResponse
         }
     } catch (error: any) {
         console.error(error);
         return {
             errorRedirect: getErrorRedirect(
-                '/dashboard',
+                redirectPath,
                 error?.message || 'An error occurred.',
                 'Please try again later or contact support.'
             ),
@@ -241,11 +253,16 @@ export async function handleSubscriptionChange(price: Price, redirectPath: strin
     }
 }
 
-// function isUpgrade(currentPriceId: string, newPriceId: string): boolean {
-//     const currentPlan = await getPlanLimits(currentPriceId);
-//     const newPlan = await getPlanLimits(newPriceId);
-//     return newPlan.video_minutes > currentPlan.video_minutes;
-// }
+async function isUpgrade(currentPriceId: string, newPriceId: string): Promise<boolean> {
+    const currentPlan = await getPlanLimits(currentPriceId);
+    const newPlan = await getPlanLimits(newPriceId);
+    
+    // compare every metric
+    for (const key in currentPlan)
+        if (newPlan[key as keyof UsageLimit] > currentPlan[key as keyof UsageLimit])
+            return true;
+    return false;
+}
 
 async function upgradeSubscription(subscriptionId: string, priceId: string): Promise<string> {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -263,12 +280,13 @@ async function downgradeSubscription(subscriptionId: string, priceId: string) {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     const subscriptionItemId = subscription.items.data[0].id;
 
-    // const currentUsage = await getUserUsage(subscription.customer as string);
-    // const newPlanLimits = await getPlanLimits(priceId);
+    const currentUsage = await getUserUsage(subscriptionId);
+    const newPlanLimits = await getPlanLimits(priceId);
 
-    // if (currentUsage > newPlanLimits) {
-    //     throw new Error('Cannot downgrade subscription due to exceeding usage.');
-    // }
+    for (const metric in newPlanLimits){
+        if(currentUsage[metric as keyof UsageData] > newPlanLimits[metric as keyof UsageLimit])
+            throw new Error('Cannot downgrade subscription due to exceeding usage.');
+    }
 
     await stripe.subscriptions.update(subscriptionId, {
         items: [{ id: subscriptionItemId, price: priceId }],
@@ -302,7 +320,7 @@ async function getUserUsage(subscriptionId: string): Promise<UsageData> {
     const totalMinutes = data.find((d: any) => d.metric_name === 'video_minutes')?.usage_amount || 0;
     const totalCharacters = data.find((d: any) => d.metric_name === 'tts_characters')?.usage_amount || 0;
     return {
-         video_minutes: totalMinutes,
+        video_minutes: totalMinutes,
         tts_characters: totalCharacters
     }
 }
@@ -314,5 +332,11 @@ type UsageLimit = {
 
 async function getPlanLimits(priceId: string): Promise<UsageLimit> {
     const price = await stripe.prices.retrieve(priceId);
-    return price.metadata as unknown as UsageLimit;
+    const product = await stripe.products.retrieve(price.product as string);
+    if(!product.metadata) return { video_minutes: 10, tts_characters: 10 };
+
+    return {
+        video_minutes: parseInt(product.metadata.video_minutes) || 10,
+        tts_characters: parseInt(product.metadata.tts_characters) || 10
+    }
 }
