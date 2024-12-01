@@ -25,11 +25,12 @@ model users {
   subscriptions   subscriptions[] // Relation to subscriptions
   usage_data      usage_data[] // Relation to usage data
   notifications   notifications[] // Relation to notifications
+  background_tasks background_tasks[]  
   generations     generations[]
 }
 
 model customers {
-  id                 String   @unique @db.Uuid
+  id                 String   @id @db.Uuid
   user               users    @relation(fields: [id], references: [id], onDelete: Cascade)
   stripe_customer_id String   @unique // Stripe Customer ID
   created_at         DateTime @default(now())
@@ -124,14 +125,14 @@ model notifications {
 }
 
 model generations {
-  id              Int               @id @default(autoincrement())
+  id              String            @id @db.Uuid
   user_id         String            @db.Uuid
   user            users             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   subscription_id String?
   subscription    subscriptions?    @relation(fields: [subscription_id], references: [id], onDelete: Cascade)
   type            generation_type
   status          generation_status @default(Pending)
-  celery_task_id  String? // Celery task UUID
+  background_task background_tasks?
   input_params    Json // Task parameters
   output_url      String? // Generated content location
   error_message   String?
@@ -148,7 +149,6 @@ model generations {
   canceled_at     DateTime?
   created_at      DateTime          @default(now())
   updated_at      DateTime          @updatedAt
-  background_task background_tasks?
 
   @@index([status])
   @@index([type])
@@ -156,10 +156,14 @@ model generations {
 
 // celery_task model to track background tasks
 model background_tasks {
-  id            String      @id // Celery task UUID
-  generation_id Int         @unique
+  id            String      @id @db.Uuid
+  user_id       String      @db.Uuid
+  user          users       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  generation_id String      @unique @db.Uuid
   generation    generations @relation(fields: [generation_id], references: [id], onDelete: Cascade)
   status        task_status
+  progress      Float?
+  message       String?
   result        Json?
   traceback     String?
   runtime       Float?
