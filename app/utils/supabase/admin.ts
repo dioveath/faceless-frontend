@@ -231,7 +231,7 @@ const upsertUsageData = async (uuid: string, subscriptionId: string) => {
             subscription_id: subscriptionId,
             metric_name: metric,
             usage_amount: 0,
-            limit_amount: -1, // not used at the moment
+            limit_amount: -1, // not used at the moment, we're using limits from the product metadata
             billing_cycle_start: subscription.current_period_start ? toDateTime(subscription.current_period_start).toISOString() : '',
             billing_cycle_end: subscription.current_period_end ? toDateTime(subscription.current_period_end).toISOString() : '',
             updated_at: new Date().toISOString()

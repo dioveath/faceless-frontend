@@ -1,9 +1,9 @@
-import { Database } from "@/types/database.types"
+import { Tables } from "@/types/database.types"
 import { deleteTaskById, fetchAvailableTasksByUserId, fetchTaskById } from "@/utils/api/task"
 import { useMutation, UseMutationOptions, useQuery, UseQueryOptions } from "@tanstack/react-query"
 import { useUser } from "../user/use-user"
 
-type Task = Database["public"]["Tables"]["tasks"]["Row"]
+type Task = Tables<"background_tasks">
 
 export const useAvailableTasksByUserId = (userId: string, options: Omit<UseQueryOptions<Task[]>, "queryKey" | "queryFn">) => {
     return useQuery<Task[]>({

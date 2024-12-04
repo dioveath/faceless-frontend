@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { VideoGenerationCard } from '@/dashboard/_components/video-generation-card'
 import { videoGenerationTypes } from '@/data/video-generation-types'
 import { Input } from '@/components/ui/input'
+import ShowToken from './show_token'
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-4xl font-bold mb-8">AI Video Generation Dashboard</h1>
+      <ShowToken/>
       <Input
         type="search"
         placeholder="Search video generation types..."

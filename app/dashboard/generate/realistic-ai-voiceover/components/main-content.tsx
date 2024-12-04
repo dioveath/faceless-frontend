@@ -12,45 +12,57 @@ import SettingsTab from "./settings-tab"
 import HistoryTab from "./history-tab"
 import LoadingScreen from "./loading-screen"
 import SuccessMessage from "./success-message"
-
-// Mock API function
-const mockGenerateSpeech = (text: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (Math.random() > 0.1) { // 90% success rate
-        resolve("https://example.com/generated-speech.mp3")
-      } else {
-        reject(new Error("Failed to generate speech. Please try again."))
-      }
-    }, 3000)
-  })
-}
+import { useGenerateAudio } from "@/hooks/audio/use-audio"
+import { GenerateAudioRequest, GenerateAudioResponse } from "@/utils/api/types/audio-request.types"
+import { useToast } from "@/hooks/use-toast"
 
 export default function TextToSpeech() {
   const [text, setText] = React.useState("")
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
-  const [generatedAudioUrl, setGeneratedAudioUrl] = React.useState<string | null>(null)
+  const [generationId, setGenerationId] = React.useState("")
+  const [isTaskComplete, setIsTaskComplete] = React.useState(false)
+  const [generateError, setGenerateError] = React.useState("")
+  const [showLoader, setShowLoader] = React.useState(false)
+  const { toast } = useToast()
+
+  const { mutateAsync: generateSpeech, isPending, error } = useGenerateAudio({
+    onSuccess: (response: GenerateAudioResponse) => {
+      setShowLoader(true)
+      return setGenerationId(response.data.generation_id)
+    },
+    onError: (error) => {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: "Failed to generate speech: " + error.message,
+        variant: "destructive"
+      })
+    }
+  })
+
+  React.useEffect(() => {
+    if (isTaskComplete) {
+      setShowLoader(false)
+    }
+  }, [isTaskComplete])
 
   const handleGenerate = async () => {
-    setIsLoading(true)
-    setError(null)
-    setGeneratedAudioUrl(null)
-
-    try {
-      const audioUrl = await mockGenerateSpeech(text)
-      setGeneratedAudioUrl(audioUrl)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred")
-    } finally {
-      setIsLoading(false)
+    const request: GenerateAudioRequest = {
+      audio_settings: {
+        text: text,
+        voice: "fathom",
+        engine: "chatgptaudio",
+        speed: 1,
+        pitch: 1,
+        volume: 1
+      }
     }
+    await generateSpeech(request)
   }
 
   return (
     <TooltipProvider>
       <AnimatePresence>
-        {isLoading && <LoadingScreen />}
+        {showLoader && <LoadingScreen isTaskComplete={isTaskComplete} setIsTaskComplete={setIsTaskComplete} generationId={generationId} />}
       </AnimatePresence>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -70,12 +82,6 @@ export default function TextToSpeech() {
               Unleash the power of our cutting-edge technology to generate realistic, captivating speech in a wide range of languages.
             </p>
           </div>
-          <Tabs defaultValue="simple">
-            <TabsList>
-              <TabsTrigger value="simple">Simple</TabsTrigger>
-              <TabsTrigger value="advanced">Advanced</TabsTrigger>
-            </TabsList>
-          </Tabs>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-[1fr,350px] gap-6">
@@ -122,7 +128,7 @@ export default function TextToSpeech() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline">Reset to defaults</Button>
-            <Button onClick={handleGenerate} disabled={isLoading || text.length === 0}>
+            <Button onClick={handleGenerate} disabled={isPending || text.length === 0}>
               <Wand2 className="w-4 h-4 mr-2" />
               Generate speech
             </Button>
@@ -138,18 +144,17 @@ export default function TextToSpeech() {
               transition={{ duration: 0.5 }}
               className="mt-4 p-4 bg-red-100 text-red-700 rounded-md"
             >
-              {error}
+              {error.message}
             </motion.div>
           )}
         </AnimatePresence>
 
         <AnimatePresence>
-          {generatedAudioUrl && (
-            <SuccessMessage audioUrl={generatedAudioUrl} />
+          {generationId && (
+            <SuccessMessage generationId={generationId} />
           )}
         </AnimatePresence>
       </motion.div>
     </TooltipProvider>
   )
 }
-
