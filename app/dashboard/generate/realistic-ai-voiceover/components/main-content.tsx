@@ -10,23 +10,18 @@ import { Wand2 } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 import SettingsTab from "./settings-tab"
 import HistoryTab from "./history-tab"
-import LoadingScreen from "./loading-screen"
-import SuccessMessage from "./success-message"
 import { useGenerateAudio } from "@/hooks/audio/use-audio"
 import { GenerateAudioRequest, GenerateAudioResponse } from "@/utils/api/types/audio-request.types"
 import { useToast } from "@/hooks/use-toast"
+import { AudioGenerationItem } from "./audio-item"
 
 export default function TextToSpeech() {
   const [text, setText] = React.useState("")
   const [generationId, setGenerationId] = React.useState("")
-  const [isTaskComplete, setIsTaskComplete] = React.useState(false)
-  const [generateError, setGenerateError] = React.useState("")
-  const [showLoader, setShowLoader] = React.useState(false)
   const { toast } = useToast()
 
   const { mutateAsync: generateSpeech, isPending, error } = useGenerateAudio({
     onSuccess: (response: GenerateAudioResponse) => {
-      setShowLoader(true)
       return setGenerationId(response.data.generation_id)
     },
     onError: (error) => {
@@ -39,11 +34,7 @@ export default function TextToSpeech() {
     }
   })
 
-  React.useEffect(() => {
-    if (isTaskComplete) {
-      setShowLoader(false)
-    }
-  }, [isTaskComplete])
+
 
   const handleGenerate = async () => {
     const request: GenerateAudioRequest = {
@@ -61,9 +52,6 @@ export default function TextToSpeech() {
 
   return (
     <TooltipProvider>
-      <AnimatePresence>
-        {showLoader && <LoadingScreen isTaskComplete={isTaskComplete} setIsTaskComplete={setIsTaskComplete} generationId={generationId} />}
-      </AnimatePresence>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -129,8 +117,8 @@ export default function TextToSpeech() {
           <div className="flex gap-2">
             <Button variant="outline">Reset to defaults</Button>
             <Button onClick={handleGenerate} disabled={isPending || text.length === 0}>
-              <Wand2 className="w-4 h-4 mr-2" />
-              Generate speech
+              {isPending ? <span className="animate-spin">⌛</span> : <Wand2 className="w-4 h-4 mr-2" />}
+              {isPending ? "Loading..." : "Generate"}
             </Button>
           </div>
         </motion.div>
@@ -150,9 +138,7 @@ export default function TextToSpeech() {
         </AnimatePresence>
 
         <AnimatePresence>
-          {generationId && (
-            <SuccessMessage generationId={generationId} />
-          )}
+          {generationId && <AudioGenerationItem generationId={generationId} />}
         </AnimatePresence>
       </motion.div>
     </TooltipProvider>
