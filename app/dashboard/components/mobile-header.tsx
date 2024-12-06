@@ -3,7 +3,7 @@
 import { Menu, Share2, MoreVertical, Plus } from 'lucide-react'
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { BreadcrumbNav } from "@/dashboard/_components/breadcrumb"
+import { BreadcrumbNav } from "@/dashboard/components/breadcrumb"
 
 interface MobileHeaderProps {
   onMenuClick: () => void

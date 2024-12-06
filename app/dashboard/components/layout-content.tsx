@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sidebar } from "@/dashboard/_components/sidebar"
-import { MobileHeader } from "@/dashboard/_components/mobile-header"
-import { BreadcrumbNav } from "@/dashboard/_components/breadcrumb"
+import { Sidebar } from "@/dashboard/components/sidebar"
+import { MobileHeader } from "@/dashboard/components/mobile-header"
+import { BreadcrumbNav } from "@/dashboard/components/breadcrumb"
 
 export function LayoutContent({
   children,

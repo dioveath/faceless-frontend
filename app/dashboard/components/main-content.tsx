@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { VideoGenerationCard } from '@/dashboard/_components/video-generation-card'
+import { VideoGenerationCard } from '@/dashboard/components/video-generation-card'
 import { videoGenerationTypes } from '@/data/video-generation-types'
 import { Input } from '@/components/ui/input'
 import ShowToken from './show_token'

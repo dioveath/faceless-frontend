@@ -1,7 +1,7 @@
 "use client"
 
-import { ThemeProvider } from "@/dashboard/_components/theme-provider"
-import { LayoutContent } from "@/dashboard/_components/layout-content"
+import { ThemeProvider } from "@/dashboard/components/theme-provider"
+import { LayoutContent } from "@/dashboard/components/layout-content"
 import { useEffect, useState } from "react"
 import React from "react"
 import { AnimatePresence } from "framer-motion"
