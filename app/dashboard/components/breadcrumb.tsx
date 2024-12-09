@@ -23,7 +23,6 @@ export function BreadcrumbNav() {
         <BreadcrumbItem>
           <BreadcrumbLink href="/" className="flex items-center">
             <Home className="h-4 w-4 mr-2" />
-            Home
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator>

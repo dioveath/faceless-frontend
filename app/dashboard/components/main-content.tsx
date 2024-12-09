@@ -9,7 +9,6 @@ import ShowToken from './show_token'
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('')
-
   const filteredTypes = videoGenerationTypes.filter((type) =>
     type.title.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -17,13 +16,14 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-4xl font-bold mb-8">AI Video Generation Dashboard</h1>
-      <ShowToken/>
+      {/* <ShowToken/> */}
       <Input
         type="search"
         placeholder="Search video generation types..."
         className="mb-6"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        autoComplete='off'
       />
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"

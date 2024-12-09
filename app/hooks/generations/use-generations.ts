@@ -1,3 +1,5 @@
+"use client";
+
 import { Tables } from "@/types/database.types";
 import { deleteGenerationById, fetchAllAudioGenerationsByUserId, fetchAllVideoGenerationsByUserId, fetchAvailableGenerationsByUserId, fetchGenerationById } from "@/utils/api/generation";
 import { InfiniteData, UseInfiniteQueryOptions, UseMutationOptions, UseQueryOptions, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
