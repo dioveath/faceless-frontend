@@ -4,28 +4,27 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Download, Trash2 } from 'lucide-react'
 import Link from "next/link"
-import { Database } from "@/types/database.types"
-import { useDeleteTaskById } from "@/hooks/task/use-task"
+import { Tables } from "@/types/database.types"
+import { useDeleteTaskById, useTaskById } from "@/hooks/task/use-task"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { downloadLinkForTask } from "@/utils/api/task"
 
-
-
-type Task = Database["public"]["Tables"]["tasks"]["Row"]
+type Generation = Tables<"generations">
 
 interface VideoTaskCardProps {
-    task: Task
+    generation: Generation
 }
 
-export function VideoTaskCard({ task }: VideoTaskCardProps) {
-    const statusColor = {
-        processing: "bg-blue-500",
-        completed: "bg-green-500",
-        failed: "bg-red-500",
-    }[task.status || ""] || "bg-gray-500"
-
+export function VideoTaskCard({ generation }: VideoTaskCardProps) {
+    const statusColor =
+    {
+      Processing: "bg-blue-500",
+      Completed: "bg-green-500",
+      Failed: "bg-red-500",
+    }[generation.status.toString() || ""] || "bg-gray-500";
     const queryClient = useQueryClient()
+    const { data: task, isPending: isTaskPending, error: taskError } = useTaskById(generation?.background_task_id || "", { enabled: !!generation.background_task_id, refetchInterval: 1000 })
 
     const { mutateAsync, isPending } = useDeleteTaskById({
         onSuccess: (data) => {
@@ -43,11 +42,11 @@ export function VideoTaskCard({ task }: VideoTaskCardProps) {
     return (
 
         <Card className="transition-shadow hover:shadow-lg">
-            <Link href={`/dashboard/generations/${task.id}`}>
+            <Link href={`/dashboard/generations/${generation.id}`}>
                 <CardHeader>
                     <CardTitle className="flex justify-between items-center">
-                        <span className="truncate">Task {task.id.slice(0, 8)}</span>
-                        <Badge className={statusColor}>{task.status}</Badge>
+                        <span className="truncate">Task {generation.id.slice(0, 8)}</span>
+                        <Badge className={statusColor}>{generation.status}</Badge>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -55,33 +54,35 @@ export function VideoTaskCard({ task }: VideoTaskCardProps) {
                         <div>
                             <div className="flex justify-between text-sm text-muted-foreground mb-1">
                                 <span>Progress</span>
-                                <span>{task.progress}%</span>
+                                { isTaskPending && <span>Loading...</span> }
+                                { task && <span>{task.progress}%</span> }
                             </div>
-                            <Progress value={task.progress} />
+                            { isTaskPending && <Progress value={0} /> }
+                            { task && <Progress value={task.progress} />}
                         </div>
                         <div className="text-sm">
                             <p>
                                 <strong>Created:</strong>{" "}
-                                {new Date(task.created_at).toLocaleString()}
+                                {new Date(generation.created_at).toLocaleString()}
                             </p>
                             <p>
-                                <strong>User ID:</strong> {task.user_id || "N/A"}
+                                <strong>User ID:</strong> {generation.user_id || "N/A"}
                             </p>
                         </div>
                     </div>
                 </CardContent>
             </Link>
             <CardFooter className="flex justify-between">
-                <Link href={task.file_path ? downloadLinkForTask(task) : "#"} passHref>
+                <Link href={generation.output_url ? generation.output_url : "#"} passHref>
                     <Button
                         variant="outline"
-                        disabled={!task.file_path}
+                        disabled={!generation.output_url}
                     >
                         <Download className="mr-2 h-4 w-4" />
                         Download
                     </Button>
                 </Link>
-                <DeleteAlertDialog handleDelete={() => deleteTask(task.id)} loading={isPending} />
+                {/* <DeleteAlertDialog handleDelete={() => deleteTask(task.id)} loading={isPending} /> */}
             </CardFooter>
         </Card>
     )

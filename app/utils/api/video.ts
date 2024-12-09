@@ -8,7 +8,7 @@ export const fetchAvailableGenerateOptions = async (): Promise<AvailableOptionsR
 }
 
 export const generateVideo = async (requestData: GenerateVideoRequest) => {
-    const response = await apiClient.post("/generate-video", requestData);
+    const response = await apiClient.post("/video/generate", requestData);
     return response.data;
 }
 

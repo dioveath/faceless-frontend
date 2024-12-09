@@ -12,12 +12,13 @@ import { StepFour } from './_components/step-four'
 import { LoadingScreen } from './_components/loading-screen'
 import { useAvailableCaptionPresets, useGenerateVideo } from '@/hooks/video/use-generate-video'
 import { GenerateVideoRequest } from '@/utils/api/types/video-request.types'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 export default function AIVideoGenerator() {
   const [step, setStep] = useState(1)
   const [isGenerating, setIsGenerating] = useState(false)
   const {isLoading, error, settings, availableSettings, updateSettings, updateBackgroundSettings, updateRedditSettings } = useVideoSettings()
+  const router = useRouter()
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4))
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1))
@@ -25,7 +26,7 @@ export default function AIVideoGenerator() {
   const { mutateAsync, isPending, } = useGenerateVideo({
     onSuccess: (data: any) => {
       setIsGenerating(false)
-      redirect(`/dashboard/generations/${data?.data?.task_id}`)
+      return router.push(`/dashboard/generations/${data?.data?.generation_id}`)
     },
     onError: (error) => {
       setIsGenerating(false)

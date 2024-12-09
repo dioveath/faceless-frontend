@@ -102,7 +102,7 @@ export default function TextToSpeech() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <Card className="p-4">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleGenerate)} className="space-y-6">
+                <form  className="space-y-6">
                   <FormField
                     control={form.control}
                     name="text"
@@ -138,7 +138,7 @@ export default function TextToSpeech() {
             <Button variant="outline" onClick={handleReset}>
               Reset to defaults
             </Button>
-            <Button type="submit" disabled={isPending || text.length === 0}>
+            <Button disabled={isPending || text.length === 0} onClick={form.handleSubmit(handleGenerate)}>
               {isPending ? <span className="animate-spin">⌛</span> : <Wand2 className="w-4 h-4 mr-2" />}
               {isPending ? "Loading..." : "Generate"}
             </Button>
