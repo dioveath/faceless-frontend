@@ -9,6 +9,7 @@ import { useTaskById } from "@/hooks/task/use-task";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDeleteGenerationById } from "@/hooks/generations/use-generations";
+import { useToast } from "@/hooks/use-toast";
 
 type Generation = Tables<"generations">;
 
@@ -17,6 +18,7 @@ interface VideoTaskCardProps {
 }
 
 export function VideoTaskCard({ generation }: VideoTaskCardProps) {
+  const { toast } = useToast();
   const statusColor =
     {
       Processing: "bg-blue-500",
@@ -29,9 +31,18 @@ export function VideoTaskCard({ generation }: VideoTaskCardProps) {
   const { mutateAsync, isPending } = useDeleteGenerationById({
     onSuccess: (data) => {
       queryClient.invalidateQueries();
+      toast({
+        title: "Success",
+        description: "Generation deleted successfully",
+      })
     },
     onError: (error) => {
       console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to delete generation: " + error.message,
+        variant: "destructive",
+      })
     },
   });
 

@@ -70,12 +70,20 @@ export const deleteGenerationById = async (generationId: string): Promise<void> 
 
   const { error: tasksError } = await supabase.from("background_tasks").delete().eq("generation_id", generationId);
   if (tasksError) {
+    console.error(tasksError);
     throw new Error("Failed to delete background tasks");
   }
 
-  const { error: storageError } = await supabase.storage.from("generated_videos").remove([`${generation.user_id}/${generation.id}.mp4`]);
-  if (storageError) {
-    throw new Error("Failed to delete generation from storage");
+  if (generation.type === "Audio") {
+    const { error: storageError } = await supabase.storage.from("generated_audio").remove([`${generation.user_id}/${generation.id}.mp3`]);
+    if (storageError) {
+      throw new Error("Failed to delete generation from storage");
+    }
+  } else if (generation.type === "Video") {
+    const { error: storageError } = await supabase.storage.from("generated_videos").remove([`${generation.user_id}/${generation.id}.mp4`]);
+    if (storageError) {
+      throw new Error("Failed to delete generation from storage");
+    }
   }
 
   const { error } = await supabase.from("generations").delete().eq("id", generationId).single();

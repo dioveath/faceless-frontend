@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Volume2, MoreVertical, Download } from "lucide-react";
 import { useAllAudioGenerationsByCurrentUser } from "@/hooks/generations/use-generations";
-import { Tables } from "@/types/database.types";
-import { AudioItem } from "./audio-item";
+import { HistoryItem } from "./history-item";
+
 
 export default function HistoryTab() {
-  const { data: pageData, isPending, isFetching, error, fetchNextPage } = useAllAudioGenerationsByCurrentUser();
+  const { data: pageData, isPending, isFetching, error, fetchNextPage } = useAllAudioGenerationsByCurrentUser(1, 5);
   const [pageIndex, setPageIndex] = React.useState(1);
 
   if (isPending || isFetching) return <div>Loading...</div>;
@@ -51,43 +49,3 @@ export default function HistoryTab() {
   );
 }
 
-interface HistoryItemProps {
-  item: Tables<"generations">;
-}
-
-function HistoryItem({ item }: HistoryItemProps) {
-  const title = JSON.parse(JSON.stringify(item.input_params))?.audio_settings?.text || item.id;
-
-  return (
-      <motion.div whileHover={{ scale: 0.98 }} className="p-2 rounded-lg hover:bg-muted/50 group">
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 group">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
-          <Volume2 className="w-4 h-4 text-muted-foreground" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm truncate">{title}</p>
-          <p className="text-xs text-muted-foreground">{item.updated_at}</p>
-        </div>
-        <motion.div initial={{ opacity: 0 }} whileHover={{ opacity: 1 }} className="flex items-center gap-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Copy text</DropdownMenuItem>
-              <DropdownMenuItem>Delete</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Download className="h-4 w-4" />
-            <span className="sr-only">Download</span>
-          </Button>
-        </motion.div>
-        </div>
-        { item.status === "Completed" && item.output_url && <AudioItem audioUrl={item.output_url} /> }
-      </motion.div>
-  );
-}

@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { Database, Enums, Tables } from "@/types/database.types";
-import { downloadLinkForTask } from "@/utils/api/task";
+import { Tables } from "@/types/database.types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useDeleteTaskById, useTaskById } from "@/hooks/task/use-task";
+import { useTaskById } from "@/hooks/task/use-task";
 import { useQueryClient } from "@tanstack/react-query";
+import { useDeleteGenerationById } from "@/hooks/generations/use-generations";
+import { useToast } from "@/hooks/use-toast";
 
 type Generation = Tables<"generations">;
 
@@ -20,6 +20,7 @@ interface VideoTaskCardProps {
 }
 
 export function VideoTaskDetails({ generation }: VideoTaskCardProps) {
+  const { toast } = useToast();
   const statusColor =
     {
       Processing: "bg-blue-500",
@@ -29,17 +30,26 @@ export function VideoTaskDetails({ generation }: VideoTaskCardProps) {
   const queryClient = useQueryClient();
   const { data: task, isPending: isTaskPending, error: taskError } = useTaskById(generation?.background_task_id || "", { enabled: !!generation.background_task_id, refetchInterval: 1000 });
 
-  const { mutateAsync, isPending } = useDeleteTaskById({
+  const { mutateAsync, isPending } = useDeleteGenerationById({
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["available-tasks"] });
+      queryClient.invalidateQueries();
+      toast({
+        title: "Success",
+        description: "Generation deleted successfully",
+      });
     },
     onError: (error) => {
       console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to delete generation: " + error.message,
+        variant: "destructive",
+      });
     },
   });
 
-  const deleteTask = async (taskId: string) => {
-    await mutateAsync(taskId);
+  const deleteGeneration = async (generationId: string) => {
+    await mutateAsync(generationId);
   };
 
   return (
@@ -98,7 +108,7 @@ export function VideoTaskDetails({ generation }: VideoTaskCardProps) {
             Download
           </Button>
         </Link>
-        {/* <DeleteAlertDialog handleDelete={() => deleteTask(task.id)} loading={isPending} /> */}
+        <DeleteAlertDialog handleDelete={() => deleteGeneration(generation.id)} loading={isPending} />
       </CardFooter>
     </Card>
   );
