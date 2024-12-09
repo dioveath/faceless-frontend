@@ -1,22 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { VideoTaskCard } from "./components/video-task-card";
 import { useAllVideoGenerationsByCurrentUser } from "@/hooks/generations/use-generations";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePagination } from "@/hooks/pagination/use-pagination";
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const initialPage = Number(searchParams.get("page") || "1");
-  const limit = Number(searchParams.get("limit") || "5");
-  const [pageIndex, setPageIndex] = useState(initialPage);
-  const { data: pageData, isPending, isFetching, error, fetchNextPage, fetchPreviousPage } = useAllVideoGenerationsByCurrentUser(initialPage, limit);
-  useEffect(() => {
-    router.push(`?page=${pageIndex}&limit=${limit}`, { scroll: false });
-  }, [pageIndex, limit, router]);
+  const { pageIndex, limit, nextPage, previousPage } = usePagination();
+  const { data: pageData, isPending, isFetching, error, fetchNextPage, fetchPreviousPage } = useAllVideoGenerationsByCurrentUser(pageIndex, limit);
 
   if (isPending || isFetching) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
@@ -27,12 +19,12 @@ export default function Page() {
   const handleNextPage = () => {
     if (pageIndex >= totalPages) return;
     fetchNextPage();
-    setPageIndex(pageIndex + 1);
+    nextPage();
   };
   const handlePreviousPage = () => {
     if (pageIndex === 1) return;
     fetchPreviousPage();
-    setPageIndex(pageIndex - 1);
+    previousPage();
   };
 
   return (
