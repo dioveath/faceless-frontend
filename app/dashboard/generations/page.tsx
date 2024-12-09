@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { usePagination } from "@/hooks/pagination/use-pagination";
 
 export default function Page() {
-  const { pageIndex, limit, nextPage, previousPage } = usePagination();
+  const { pageIndex, limit, nextPage, previousPage } = usePagination(1, 6);
   const { data: pageData, isPending, isFetching, error, fetchNextPage, fetchPreviousPage } = useAllVideoGenerationsByCurrentUser(pageIndex, limit);
 
   if (isPending || isFetching) return <div>Loading...</div>;

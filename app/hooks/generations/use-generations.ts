@@ -14,9 +14,9 @@ export const useAvailableGenerationsByUserId = (userId: string, options?: UseQue
   });
 };
 
-export const useAllVideoGenerationsByUserId = (userId: string, page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
-  return useInfiniteQuery<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, [string, string], number>({
-    queryKey: ["video-generations", userId],
+export const useAllVideoGenerationsByUserId = (userId: string, page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string, number, number], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
+  return useInfiniteQuery<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, [string, string, number, number], number>({
+    queryKey: ["video-generations", userId, page, limit],
     initialPageParam: page,
     queryFn: async ({ pageParam = 1 }: { pageParam?: number }): Promise<PaginatedData<Generation>> => {
       const response = await fetchAllVideoGenerationsByUserId(userId, pageParam, limit);
@@ -32,7 +32,7 @@ export const useAllVideoGenerationsByUserId = (userId: string, page: number = 1,
   });
 };
 
-export const useAllVideoGenerationsByCurrentUser = (page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
+export const useAllVideoGenerationsByCurrentUser = (page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string, number, number], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
   const { user } = useUser();
   return useAllVideoGenerationsByUserId(user?.id || "", page, limit, {
     enabled: !!user,
@@ -40,9 +40,9 @@ export const useAllVideoGenerationsByCurrentUser = (page: number = 1, limit: num
   });
 };
 
-export const useAllAudioGenerationsByUserId = (userId: string, page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
-  return useInfiniteQuery<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, [string, string], number>({
-    queryKey: ["audio-generations", userId],
+export const useAllAudioGenerationsByUserId = (userId: string, page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string, number, number], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
+  return useInfiniteQuery<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, [string, string, number, number], number>({
+    queryKey: ["audio-generations", userId, page, limit],
     initialPageParam: page,
     queryFn: async ({ pageParam = 1 }: { pageParam?: number }): Promise<PaginatedData<Generation>> => {
       const response = await fetchAllAudioGenerationsByUserId(userId, pageParam, limit);
@@ -58,7 +58,7 @@ export const useAllAudioGenerationsByUserId = (userId: string, page: number = 1,
   });
 };
 
-export const useAllAudioGenerationsByCurrentUser = (page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
+export const useAllAudioGenerationsByCurrentUser = (page: number = 1, limit: number = 10, options?: Omit<UseInfiniteQueryOptions<PaginatedData<Generation>, Error, InfiniteData<PaginatedData<Generation>>, PaginatedData<Generation>, [string, string, number, number], number>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam">) => {
   const { user } = useUser();
   return useAllAudioGenerationsByUserId(user?.id || "", page, limit, {
     enabled: !!user,

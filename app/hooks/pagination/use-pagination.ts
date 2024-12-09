@@ -1,7 +1,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export const usePagination = (defaultPage = 1, defaultLimit = 5) => {
+export const usePagination = (defaultPage = 1, defaultLimit = 10) => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialPage = Number(searchParams.get("page") || defaultPage);
