@@ -59,11 +59,13 @@ export default function TextToSpeech() {
     onSuccess: (response: GenerateAudioResponse) => {
       return setGenerationId(response.data.generation_id);
     },
-    onError: (error) => {
+    onError: (error, _v, _ctx) => {
       console.error(error);
+      const response = error?.response;
+
       toast({
         title: "Error",
-        description: "Failed to generate speech: " + error.message,
+        description: "Failed to generate speech: " + (response?.data?.detail || ""),
         variant: "destructive",
       });
     },
@@ -102,7 +104,7 @@ export default function TextToSpeech() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, duration: 0.5 }}>
             <Card className="p-4">
               <Form {...form}>
-                <form  className="space-y-6">
+                <form className="space-y-6">
                   <FormField
                     control={form.control}
                     name="text"
@@ -148,7 +150,7 @@ export default function TextToSpeech() {
         <AnimatePresence>
           {error && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5 }} className="mt-4 p-4 bg-red-100 text-red-700 rounded-md">
-              {error.message}
+              {error.response?.data?.detail}
             </motion.div>
           )}
         </AnimatePresence>

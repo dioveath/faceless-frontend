@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <ReactQueryClientProvider>
       <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body className={`antialiased ${geistSans.variable} ${geistMono.variable}`}>
           {children}
           <Toaster />
           <RedirectToaster />
