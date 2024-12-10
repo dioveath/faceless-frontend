@@ -12,7 +12,7 @@ export default function Cta() {
           Start Your Journey Today
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto mb-8 text-sm md:text-base">
-          Join thousands of content creators who are already earning with our AI-powered platform.
+          Join thousands of faceless content creators who are already earning with our AI-powered platform.
           Start your faceless content journey now.
         </p>
         <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
