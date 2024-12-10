@@ -1,55 +1,49 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
-import { Icons } from "@/components/google-icon";
+import { Spotlight } from "@/components/ui/spot-light";
+import { GraphBackground } from "@/components/ui/graph-background";
+import { motion } from "framer-motion";
+import { AuthContainer } from "./components/auth-container";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
-import { useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  const supabase = createClient();
-
-  const searchParams = useSearchParams();
-  const next = searchParams.get("next");
-
-  async function signInWithGoogle() {
-    setIsGoogleLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      toast({
-        title: "Please try again.",
-        description: "There was an error logging in with Google.",
-        variant: "destructive",
-      });
-      setIsGoogleLoading(false);
-    }
-  }
+export default function AuthPage() {
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const router = useRouter();
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={signInWithGoogle}
-      disabled={isGoogleLoading}
-    >
-      {isGoogleLoading ? (
-        <Icons.loaderCircle className="mr-2 size-4 animate-spin" />
-      ) : (
-        <Icons.google className="mr-2 size-6" />
-      )}
-      Sign in with Google
-    </Button>
+    <div className="min-h-screen w-full relative overflow-hidden bg-background">
+      <GraphBackground/>
+      <Spotlight className="hidden dark:block absolute inset-0" />
+      
+      <div className="absolute top-4 left-4 z-50">
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/")}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
+      
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="backdrop-blur-xl bg-background/50 dark:bg-neutral-900/50 p-8 rounded-2xl border border-border dark:border-neutral-800 shadow-2xl">
+            <AuthContainer
+              mode={mode}
+              onToggleMode={() => setMode(mode === "login" ? "register" : "login")}
+            />
+          </div>
+        </motion.div>
+      </div>
+    </div>
   );
 }
