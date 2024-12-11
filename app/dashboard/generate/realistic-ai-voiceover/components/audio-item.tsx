@@ -19,7 +19,7 @@ export const AudioGenerationItem = ({ generationId }: AudioGenerationItemProps) 
     if (data?.status == "Completed") {
       queryClient.invalidateQueries({ queryKey: ["audio-generations", data.user_id] });
     }
-  }, [data]);
+  }, [data, queryClient]);
 
   if (isPending || data?.status == "Processing") {
     return <LoadingScreen />;

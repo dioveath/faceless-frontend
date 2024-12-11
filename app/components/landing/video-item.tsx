@@ -35,7 +35,7 @@ export default function VideoItem({ src, thumbnail, title, description, isThumb 
         URL.revokeObjectURL(blobUrl);
       }
     };
-  }, [src]);
+  }, [src, blobUrl]);
 
   const togglePlay = (e: any) => {
     e.preventDefault();

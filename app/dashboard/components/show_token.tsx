@@ -21,7 +21,7 @@ export default function ShowToken() {
             }
         }
         fetchToken();
-    }, []);
+    }, [supabase.auth]);
 
     return (
         <div className="p-4 bg-gray-100 rounded-lg shadow-md">

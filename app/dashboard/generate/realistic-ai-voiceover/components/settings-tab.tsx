@@ -48,7 +48,7 @@ export default function SettingsTab({ onSettingsChange }: SettingsTabProps) {
       onSettingsChange?.(values as FormValues)
     })
     return () => subscription.unsubscribe()
-  }, [onSettingsChange, form.watch])
+  }, [onSettingsChange, form])
 
   return (
     <TabsContent value="settings" className="h-[calc(100%-40px)] overflow-auto">

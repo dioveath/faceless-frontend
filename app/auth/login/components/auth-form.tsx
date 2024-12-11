@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Github } from "lucide-react";
 import GoogleLoginButton from "./google-login";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface AuthFormProps {
   mode: "login" | "register";
@@ -83,7 +84,9 @@ export function AuthForm({ mode, onToggleMode }: AuthFormProps) {
             //   <Github className="mr-2 h-4 w-4" />
             //   Continue with GitHub
             // </Button>
-            <GoogleLoginButton />
+            <Suspense fallback={<LoadingSpinner />}>
+              <GoogleLoginButton />
+            </Suspense>
           )}
         </motion.div>
       </form>

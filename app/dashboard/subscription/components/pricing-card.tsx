@@ -7,13 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatPrice } from "@/utils/helpers"
 import { getErrorRedirect } from "@/utils/redirect-toaster-helpers"
-import { ProductWithPrices, Price, useUserSubscriptions } from '@/hooks/subscription/use-subscription'
+import { ProductWithPrices, Price } from '@/hooks/subscription/use-subscription'
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { checkoutWithStripe, createStripePortal, handleSubscriptionChange } from '@/utils/stripe/server'
+import { usePathname, useRouter } from 'next/navigation'
+import { createStripePortal, handleSubscriptionChange } from '@/utils/stripe/server'
 import { getStripe } from '@/utils/stripe/client'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface PricingCardProps {
   product: ProductWithPrices
@@ -42,7 +42,7 @@ export function PricingCard({ product, features, isPopular, index, isYearly, act
       queryClient.invalidateQueries({ queryKey: ['user-subscription'] })
     }, 1000 * 5)
     return () => clearInterval(interval)
-  }, [])
+  }, [queryClient])
 
   const handleStripeCheckout = async () => {
     setIsCheckingOut(true)

@@ -14,7 +14,7 @@ export const useUser = () => {
                 const { data: { user } } = await supabase.auth.getUser();
                 setUser(user);
                 const { data: { session } } = await supabase.auth.getSession();
-                const accessToken = session?.access_token ?? null;
+                // const accessToken = session?.access_token ?? null;
             } catch (error) {
                 console.error('Error loading user:', error);
             } finally {
@@ -34,7 +34,7 @@ export const useUser = () => {
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    }, [supabase.auth]);
 
     const logout = async () => {
         try {

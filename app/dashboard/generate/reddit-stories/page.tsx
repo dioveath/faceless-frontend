@@ -44,7 +44,7 @@ export default function AIVideoGenerator() {
 
     setIsGenerating(true)
 
-    let videoGenerationRequest: GenerateVideoRequest = {
+    const videoGenerationRequest: GenerateVideoRequest = {
       video_settings: {
         video_format: settings.video_format,
         content_type: settings.content_type,

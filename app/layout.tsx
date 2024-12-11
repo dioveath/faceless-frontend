@@ -5,6 +5,7 @@ import { ReactQueryClientProvider } from "./components/query-client-provider";
 import { Toaster } from "./components/ui/toaster";
 import { RedirectToaster } from "./components/ui/redirect-toaster";
 import { ThemeProvider } from "./dashboard/components/theme-provider";
+import { Suspense } from "react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,7 +35,9 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             {children}
             <Toaster />
-            <RedirectToaster />
+            <Suspense fallback={null}>
+              <RedirectToaster />
+            </Suspense>
           </ThemeProvider>
         </body>
       </html>
