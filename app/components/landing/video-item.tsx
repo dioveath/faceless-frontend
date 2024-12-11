@@ -1,5 +1,5 @@
 import { Pause, Play, VolumeX, Volume2 } from "lucide-react";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 type VideoItemProps = {
   src: string;
@@ -13,6 +13,29 @@ export default function VideoItem({ src, thumbnail, title, description, isThumb 
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const mediaRef = useRef<HTMLVideoElement>(null);
+  const [blobUrl, setBlobUrl] = useState("");
+
+  useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        const apiEndpoint = `api/${src}`;
+        const response = await fetch(apiEndpoint);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setBlobUrl(url);
+      } catch (error) {
+        console.error("Error fetching video:", error);
+      }
+    };
+
+    if (src) fetchVideo();
+
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [src]);
 
   const togglePlay = (e: any) => {
     e.preventDefault();
@@ -36,7 +59,11 @@ export default function VideoItem({ src, thumbnail, title, description, isThumb 
 
   return (
     <React.Fragment>
-      <video ref={mediaRef as React.RefObject<HTMLVideoElement>} src={src} poster={thumbnail} className="w-full h-full object-cover" muted={isMuted} loop={false} preload="none" autoPlay={true} onClick={togglePlay}/>
+      {blobUrl && (
+        <video ref={mediaRef as React.RefObject<HTMLVideoElement>} poster={thumbnail} className="w-full h-full object-cover" muted={isMuted} loop={false} preload="none" autoPlay={true} onClick={togglePlay}>
+          <source src={blobUrl} type="video/mp4" />
+        </video>
+      )}
       {!isThumb && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
           <div className="flex items-center justify-between">

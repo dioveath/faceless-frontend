@@ -7,12 +7,13 @@ import { Book, Folder, Flag, Plus, ChevronRight, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ProfileDropdown } from "./profile-dropdown";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAllVideoGenerationsByCurrentUser } from "@/hooks/generations/use-generations";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -27,13 +28,13 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
   const { data: pagesData, isLoading, isFetching, error } = useAllVideoGenerationsByCurrentUser(1, 10);
 
   const SidebarContent = ({ isMobile = false }) => (
-    <motion.div className="flex flex-col h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+    <motion.div className="flex flex-col h-full border br-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <div className="flex-1 overflow-hidden">
         <div className="p-4 flex items-center justify-between">
-          {!isCollapsed && <div className="text-xl font-bold text-foreground">V0</div>}
+          {!isCollapsed && <div className="text-xl font-bold text-foreground">zeroface.ai</div>}
           <Button variant="ghost" size="icon" className={cn("text-muted-foreground hover:text-accent", isCollapsed && "w-full")} onClick={isMobile ? onMobileClose : toggleSidebar}>
             <motion.div initial={{ rotate: 0 }} animate={{ rotate: isCollapsed ? 180 : 0 }} transition={{ duration: 0.3 }}>
-              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4" />}
+              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <X className="w-4 h-4 text-foreground" />}
             </motion.div>
           </Button>
         </div>
@@ -96,7 +97,13 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
   // Mobile sidebar using Sheet component
   const mobileSidebar = (
     <Sheet open={isMobileOpen} onOpenChange={onMobileClose}>
-      <SheetContent side="left" className="w-[300px] p-0 bg-background border-r border-border">
+      <SheetContent side="left" className="w-[300px] p-0 bg-background border-r border-border" disableClose>
+        <VisuallyHidden>
+          <SheetHeader>
+            <SheetTitle>zeroface.ai</SheetTitle>
+            <SheetDescription>Generate video stories from Reddit posts</SheetDescription>
+          </SheetHeader>
+        </VisuallyHidden>
         <SidebarContent isMobile={true} />
       </SheetContent>
     </Sheet>

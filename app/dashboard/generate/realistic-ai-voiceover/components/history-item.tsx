@@ -40,6 +40,16 @@ export function HistoryItem({ item }: HistoryItemProps) {
     await deleteGeneration(item.id);
   };
 
+  const handleCopy = () => {
+    const text = JSON.parse(JSON.stringify(item.input_params))?.audio_settings?.text || item.id;
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Success",
+        description: "Text copied to clipboard",
+      });
+    });
+  };
+
   return (
     <motion.div whileHover={{ scale: 0.98 }} className="p-2 rounded-lg hover:bg-muted/50 group">
       <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 group">
@@ -59,7 +69,7 @@ export function HistoryItem({ item }: HistoryItemProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleCopy}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copy text
               </DropdownMenuItem>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useGenerationById } from "@/hooks/generations/use-generations";
 import LoadingScreen from "./loading-screen";
+import { useQueryClient } from "@tanstack/react-query";
 
 type AudioGenerationItemProps = {
   generationId: string;
@@ -12,6 +13,13 @@ type AudioGenerationItemProps = {
 
 export const AudioGenerationItem = ({ generationId }: AudioGenerationItemProps) => {
   const { data, isPending, error } = useGenerationById(generationId, { enabled: !!generationId, refetchInterval: 1000 });
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (data?.status == "Completed") {
+      queryClient.invalidateQueries({ queryKey: ["audio-generations", data.user_id] });
+    }
+  }, [data]);
 
   if (isPending || data?.status == "Processing") {
     return <LoadingScreen />;

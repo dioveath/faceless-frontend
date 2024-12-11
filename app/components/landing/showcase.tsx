@@ -11,21 +11,21 @@ const showcaseItems = [
     title: "Fake text video",
     description: "Create text conversation shorts",
     image: "/placeholder.svg?height=480&width=360",
-    video: "/videos/reddit-fake-text.mp4",
+    video: "/videos/reddit-fake-text",
     href: "#",
   },
   {
     title: "Reddit convo video",
     description: "Create fictional Reddit-story shorts",
     image: "/placeholder.svg?height=480&width=360",
-    video: "/videos/reddit-convo-video.mp4",
+    video: "/videos/reddit-convo-video",
     href: "#",
   },
   {
     title: "Split-screen video",
     description: "Create split-screen shorts with gameplay",
     image: "/placeholder.svg?height=480&width=360",
-    video: "/videos/split-screen-video.mp4",
+    video: "/videos/split-screen-video",
     href: "#",
   },
 ];
@@ -37,7 +37,7 @@ export default function Showcase() {
         <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-12">
           The software behind faceless virality
         </motion.h2>
-        <div className="flex flex-wrap justify-center items-center gap-y-8">
+        <div className="flex flex-wrap justify-center items-end gap-y-8">
           {showcaseItems.map((item, index) => {
             return (
               <motion.div key={index} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: index * 0.1 }} className={`px-8`}>

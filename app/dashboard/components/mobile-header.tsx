@@ -4,6 +4,7 @@ import { Menu, Share2, MoreVertical, Plus } from 'lucide-react'
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { BreadcrumbNav } from "@/dashboard/components/breadcrumb"
+import Link from 'next/link'
 
 interface MobileHeaderProps {
   onMenuClick: () => void
@@ -44,10 +45,12 @@ export function MobileHeader({ onMenuClick, title }: MobileHeaderProps) {
             </Button>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link href="/dashboard/generate/reddit-stories" passHref>
             <Button variant="outline" size="sm" className="ml-2 bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground">
               <Plus className="h-4 w-4 mr-2" />
-              New Chat
+              New Generation
             </Button>
+            </Link>
           </motion.div>
         </div>
       </motion.div>

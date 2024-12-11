@@ -1,10 +1,29 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from './app/utils/supabase/middleware'
 
+
+
 export async function middleware(request: NextRequest) {
-  if(request.nextUrl.pathname.startsWith('/api/webhooks'))
+  const publicPaths = [
+    '/',
+    '/api/videos/**'
+  ]
+
+  const matcher = new RegExp(
+    publicPaths
+      .map((path) => {
+        if (path.includes('**')) {
+          return path.replace('**', '.*').replace(/\/$/, '') + '(\\/|$)';
+        }
+        return path.replace(/\/$/, '') + '(\\/|$)';
+      })
+      .join('|')
+  )
+
+  if (request.nextUrl.pathname.startsWith('/api/webhooks'))
     return NextResponse.next()
-  
+  if (matcher.test(request.nextUrl.pathname))
+    return NextResponse.next()
   return await updateSession(request)
 }
 

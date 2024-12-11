@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { Tv, Menu, X } from 'lucide-react'
-import { gradientAnimation, smoothScroll } from '@/lib/utils'
-import { ThemeSwitcher } from './theme-switcher'
-import { NavMenu } from './nav-menu'
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Tv, Menu, X } from "lucide-react";
+import { gradientAnimation, smoothScroll } from "@/lib/utils";
+import { ThemeSwitcher } from "./theme-switcher";
+import { NavMenu } from "./nav-menu";
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/50 backdrop-blur-sm border-b border-border">
@@ -20,27 +20,26 @@ export default function Navbar() {
             <Tv className="h-6 w-6 text-primary" />
             <span className="text-lg font-semibold">zeroface.ai</span>
           </Link>
-          
+
           <div className="hidden md:flex items-center">
             <NavMenu />
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
             <ThemeSwitcher />
-            <Button variant="ghost" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Sign In
-            </Button>
-            <Button className="gradient-animation text-primary-foreground font-medium">
-              Get Started
-            </Button>
+            <Link href="/auth/login?mode=login">
+              <Button variant="ghost" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Sign In
+              </Button>
+            </Link>
+            <Link href={"/auth/login?mode=register"}>
+              <Button className="gradient-animation text-primary-foreground font-medium">Get Started</Button>
+            </Link>
           </div>
 
           <div className="flex md:hidden items-center space-x-4">
             <ThemeSwitcher />
-            <button
-              className="text-foreground"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
+            <button className="text-foreground" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
@@ -56,14 +55,11 @@ export default function Navbar() {
               <Button variant="ghost" className="w-full justify-start text-base font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Sign In
               </Button>
-              <Button className="w-full gradient-animation text-primary-foreground font-medium">
-                Get Started
-              </Button>
+              <Button className="w-full gradient-animation text-primary-foreground font-medium">Get Started</Button>
             </div>
           </div>
         </div>
       )}
     </nav>
-  )
+  );
 }
-

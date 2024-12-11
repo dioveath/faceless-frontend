@@ -7,10 +7,12 @@ import { motion } from "framer-motion";
 import { AuthContainer } from "./components/auth-container";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AuthPage() {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const searchParams = useSearchParams();
+  const queryMode = searchParams.get("mode") as "login" | "register" || "login";
+  const [mode, setMode] = useState<"login" | "register">(queryMode);
   const router = useRouter();
 
   return (
