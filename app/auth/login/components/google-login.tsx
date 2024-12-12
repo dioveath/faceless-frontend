@@ -20,6 +20,7 @@ export default function GoogleLoginButton() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
+          // NOTE: replace window.location.origin with NEXT_PUBLIC_SITE_URL
           redirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
         },
       });

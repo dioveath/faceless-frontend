@@ -1,6 +1,5 @@
 export const getURL = (path: string = '') => {
     let url = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "";
-    if (!url) url = process.env.NEXT_PUBLIC_VERCEL_URL?.trim() || "";
     if (!url) url = 'http://localhost:3000/';
 
     // Trim the URL and remove trailing slash if exists.
